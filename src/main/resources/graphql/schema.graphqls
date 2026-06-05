@@ -1,0 +1,204 @@
+scalar UUID
+
+type Rol {
+    id: UUID!
+    nombre: String
+    description: String
+}
+
+type Usuario {
+    id: UUID!
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    rolObj: Rol
+    estado: String
+}
+
+type Empresa {
+    id: UUID!
+    nombre_legal: String
+    nombre_comercial: String
+    nit: Int
+    direccion: String
+    celular: Int
+}
+
+type Reclutador {
+    id: UUID!
+    nombre: String
+    apellido: String
+    email: String
+    telefono: String
+    telefonoReclutador: Int
+    cargo: String
+    empresa: Empresa
+    estado: String
+}
+
+type Candidato {
+    id: UUID!
+    nombre: String
+    apellido: String
+    email: String
+    registro: Int
+    sueldo_esperado: Float
+    modalidad_preferida: String
+    nivel_educativo: String
+    nacionalidad: String
+    cluster_id: Int
+    estado: String
+}
+
+type Trabajos {
+    id: UUID!
+    nombre: String
+    codigo: String
+}
+
+type Categoria {
+    id: UUID!
+    nombre: String
+}
+
+type Oferta {
+    id: UUID!
+    titulo: String
+    descripcion: String
+    contrato: String
+    requisitos: String
+    experiencia_tiempo: Int
+    modalidad_trabajo: String
+    estado: String
+    sueldo: Float
+    cluster_id: Int
+    fecha_publicacion: String
+    fecha_vencimiento: String
+    categoria: Categoria
+    reclutador: Reclutador
+}
+
+type Postulacion {
+    id: UUID!
+    fecha: String
+    fase_alcanzada: String
+    id_cv: String
+    candidato: Candidato
+    oferta: Oferta
+}
+
+type OfertaTrabajo {
+    id: UUID!
+    oferta: Oferta
+    trabajos: Trabajos
+}
+
+type Habilidades {
+    id: UUID!
+    nombre: String
+}
+
+type CandidatoHabilidad {
+    id: UUID!
+    candidato: Candidato
+    habilidad: Habilidades
+}
+
+type OfertaHabilidad {
+    id: UUID!
+    nivel_importancia: String
+    oferta: Oferta
+    habilidad: Habilidades
+}
+
+type Query {
+    listarRoles: [Rol]
+    obtenerRol(id: UUID!): Rol
+    listarUsuarios: [Usuario]
+    obtenerUsuario(id: UUID!): Usuario
+    listarEmpresas: [Empresa]
+    obtenerEmpresa(id: UUID!): Empresa
+    listarTrabajos: [Trabajos]
+    obtenerTrabajo(id: UUID!): Trabajos
+    listarCategorias: [Categoria]
+    obtenerCategoria(id: UUID!): Categoria
+    listarOfertas: [Oferta]
+    obtenerOferta(id: UUID!): Oferta
+    listarPostulaciones: [Postulacion]
+    obtenerPostulacion(id: UUID!): Postulacion
+    listarReclutadores: [Reclutador]
+    obtenerReclutador(id: UUID!): Reclutador
+    listarCandidatos: [Candidato]
+    obtenerCandidato(id: UUID!): Candidato
+    listarHabilidades: [Habilidades]
+    obtenerHabilidad(id: UUID!): Habilidades
+    listarCandidatoHabilidades: [CandidatoHabilidad]
+    listarOfertaHabilidades: [OfertaHabilidad]
+    listarOfertaTrabajos: [OfertaTrabajo]
+}
+
+type Mutation {
+    # Rol
+    crearRol(nombre: String, description: String): Rol
+    actualizarRol(id: UUID!, nombre: String, description: String): Rol
+    eliminarRol(id: UUID!): Boolean
+
+    # Empresa
+    crearEmpresa(nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int): Empresa
+    actualizarEmpresa(id: UUID!, nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int): Empresa
+    eliminarEmpresa(id: UUID!): Boolean
+
+    # Trabajos
+    crearTrabajo(nombre: String, codigo: String): Trabajos
+    actualizarTrabajo(id: UUID!, nombre: String, codigo: String): Trabajos
+    eliminarTrabajo(id: UUID!): Boolean
+
+    # Categoria
+    crearCategoria(nombre: String): Categoria
+    actualizarCategoria(id: UUID!, nombre: String): Categoria
+    eliminarCategoria(id: UUID!): Boolean
+
+    # Usuario
+    crearUsuario(nombre: String, apellido: String, email: String, password: String, telefono: String, rol_id: UUID, estado: String): Usuario
+    actualizarUsuario(id: UUID!, nombre: String, apellido: String, email: String, telefono: String, rol_id: UUID, estado: String): Usuario
+    eliminarUsuario(id: UUID!): Boolean
+
+    # Reclutador
+    crearReclutador(nombre: String, apellido: String, email: String, password: String, telefono: Int, cargo: String, empresa_id: UUID, estado: String): Reclutador
+    actualizarReclutador(id: UUID!, nombre: String, apellido: String, email: String, telefono: Int, cargo: String, empresa_id: UUID, estado: String): Reclutador
+    eliminarReclutador(id: UUID!): Boolean
+
+    # Candidato
+    crearCandidato(nombre: String, apellido: String, email: String, password: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: Int, estado: String): Candidato
+    actualizarCandidato(id: UUID!, nombre: String, apellido: String, email: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: Int, estado: String): Candidato
+    eliminarCandidato(id: UUID!): Boolean
+
+    # Oferta
+    crearOferta(titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: Int, categoria_id: UUID, reclutador_id: UUID): Oferta
+    actualizarOferta(id: UUID!, titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: Int, categoria_id: UUID, reclutador_id: UUID): Oferta
+    eliminarOferta(id: UUID!): Boolean
+
+    # Postulacion
+    crearPostulacion(fase_alcanzada: String, id_cv: String, candidato_id: UUID, oferta_id: UUID): Postulacion
+    actualizarPostulacion(id: UUID!, fase_alcanzada: String, id_cv: String, candidato_id: UUID, oferta_id: UUID): Postulacion
+    eliminarPostulacion(id: UUID!): Boolean
+
+    # Habilidades
+    crearHabilidad(nombre: String): Habilidades
+    actualizarHabilidad(id: UUID!, nombre: String): Habilidades
+    eliminarHabilidad(id: UUID!): Boolean
+
+    # CandidatoHabilidad
+    crearCandidatoHabilidad(candidato_id: UUID, habilidad_id: UUID): CandidatoHabilidad
+    eliminarCandidatoHabilidad(id: UUID!): Boolean
+
+    # OfertaHabilidad
+    crearOfertaHabilidad(nivel_importancia: String, oferta_id: UUID, habilidad_id: UUID): OfertaHabilidad
+    actualizarOfertaHabilidad(id: UUID!, nivel_importancia: String, oferta_id: UUID, habilidad_id: UUID): OfertaHabilidad
+    eliminarOfertaHabilidad(id: UUID!): Boolean
+
+    # OfertaTrabajo
+    crearOfertaTrabajo(oferta_id: UUID, trabajo_id: UUID): OfertaTrabajo
+    eliminarOfertaTrabajo(id: UUID!): Boolean
+}
