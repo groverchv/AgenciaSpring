@@ -1,27 +1,27 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import java.util.UUID;
-import java.sql.Date;
+import java.time.Instant;
 
-@Entity
+@DynamoDbBean
 @Data
 public class Postulacion {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    private Date fecha;
+    private Instant fecha;
     private String fase_alcanzada;
     private String id_cv;
-
-    @ManyToOne
-    @JoinColumn(name = "candidato_id")
     private Candidato candidato;
-
-    @ManyToOne
-    @JoinColumn(name = "oferta_id")
     private Oferta oferta;
-}
 
+    @DynamoDbPartitionKey
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+}

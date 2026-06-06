@@ -1,18 +1,16 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import java.util.UUID;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.Instant;
 
-@Entity
+@DynamoDbBean
 @Data
 public class Oferta {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private String titulo;
     private String descripcion;
     private String contrato;
@@ -23,15 +21,17 @@ public class Oferta {
     private String estado;
     private BigDecimal sueldo;
     private Integer cluster_id;
-    private Date fecha_publicacion;
-    private Date fecha_vencimiento;
-
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
+    private Instant fecha_publicacion;
+    private Instant fecha_vencimiento;
     private Categoria categoria;
-
-    @ManyToOne
-    @JoinColumn(name = "reclutador_id")
     private Reclutador reclutador;
-}
 
+    @DynamoDbPartitionKey
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+}

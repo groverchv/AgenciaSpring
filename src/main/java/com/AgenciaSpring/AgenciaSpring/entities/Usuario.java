@@ -1,18 +1,15 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import java.util.UUID;
-import java.sql.Timestamp;
+import java.time.Instant;
 
-@Entity
+@DynamoDbBean
 @Data
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private String nombre;
     private String apellido;
     private String email;
@@ -21,10 +18,16 @@ public class Usuario {
     private String rol;
     private String estado;
     private String video_id;
-    private Timestamp updated_at;
-    private Timestamp created_at;
-
-    @ManyToOne
-    @JoinColumn(name = "rol_id")
+    private Instant updated_at;
+    private Instant created_at;
     private Rol rolObj;
+
+    @DynamoDbPartitionKey
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }

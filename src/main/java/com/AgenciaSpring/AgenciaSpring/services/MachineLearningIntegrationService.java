@@ -77,6 +77,7 @@ public class MachineLearningIntegrationService {
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
                 // Extraer asignaciones y actualizar la base de datos de manera eficiente
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
                 if (asignaciones != null) {
                     Map<String, Candidato> candidatosMap = candidatos.stream()
@@ -133,6 +134,7 @@ public class MachineLearningIntegrationService {
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
                 // Extraer asignaciones y actualizar la base de datos de manera eficiente
+                @SuppressWarnings("unchecked")
                 List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
                 if (asignaciones != null) {
                     Map<String, Oferta> ofertasMap = ofertas.stream()

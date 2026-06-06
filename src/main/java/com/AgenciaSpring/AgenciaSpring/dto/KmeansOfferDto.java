@@ -2,7 +2,6 @@ package com.AgenciaSpring.AgenciaSpring.dto;
 
 import lombok.Data;
 import java.util.List;
-import java.util.UUID;
 import java.math.BigDecimal;
 
 @Data

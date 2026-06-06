@@ -1,15 +1,14 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import java.math.BigDecimal;
 
-@Entity
+@DynamoDbBean
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Candidato extends Usuario {
-
     private Integer registro;
     private BigDecimal sueldo_esperado;
     private String modalidad_preferida;

@@ -7,8 +7,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
@@ -166,8 +165,8 @@ public class MainGraphQLController {
         Usuario u = new Usuario();
         u.setNombre(nombre); u.setApellido(apellido); u.setEmail(email);
         u.setPassword(password); u.setTelefono(telefono); u.setEstado(estado);
-        u.setCreated_at(new Timestamp(System.currentTimeMillis()));
-        u.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        u.setCreated_at(Instant.now());
+        u.setUpdated_at(Instant.now());
         if (rol_id != null) u.setRolObj(rolService.findById(rol_id).orElse(null));
         return usuarioService.save(u);
     }
@@ -183,7 +182,7 @@ public class MainGraphQLController {
         if (telefono != null) u.setTelefono(telefono);
         if (estado != null) u.setEstado(estado);
         if (rol_id != null) u.setRolObj(rolService.findById(rol_id).orElse(null));
-        u.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        u.setUpdated_at(Instant.now());
         return usuarioService.save(u);
     }
 
@@ -203,8 +202,8 @@ public class MainGraphQLController {
         r.setNombre(nombre); r.setApellido(apellido); r.setEmail(email);
         r.setPassword(password); r.setTelefono(telefono != null ? telefono.toString() : null);
         r.setTelefonoReclutador(telefono); r.setCargo(cargo); r.setEstado(estado);
-        r.setCreated_at(new Timestamp(System.currentTimeMillis()));
-        r.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        r.setCreated_at(Instant.now());
+        r.setUpdated_at(Instant.now());
         if (empresa_id != null) r.setEmpresa(empresaService.findById(empresa_id).orElse(null));
         return reclutadorService.save(r);
     }
@@ -221,7 +220,7 @@ public class MainGraphQLController {
         if (cargo != null) r.setCargo(cargo);
         if (estado != null) r.setEstado(estado);
         if (empresa_id != null) r.setEmpresa(empresaService.findById(empresa_id).orElse(null));
-        r.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        r.setUpdated_at(Instant.now());
         return reclutadorService.save(r);
     }
 
@@ -245,8 +244,8 @@ public class MainGraphQLController {
         c.setNacionalidad(nacionalidad); c.setCluster_id(cluster_id);
         c.setModalidad_preferida(modalidad_preferida); c.setNivel_educativo(nivel_educativo);
         if (sueldo_esperado != null) c.setSueldo_esperado(BigDecimal.valueOf(sueldo_esperado));
-        c.setCreated_at(new Timestamp(System.currentTimeMillis()));
-        c.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        c.setCreated_at(Instant.now());
+        c.setUpdated_at(Instant.now());
         return candidatoService.save(c);
     }
 
@@ -267,7 +266,7 @@ public class MainGraphQLController {
         if (nacionalidad != null) c.setNacionalidad(nacionalidad);
         if (cluster_id != null) c.setCluster_id(cluster_id);
         if (estado != null) c.setEstado(estado);
-        c.setUpdated_at(new Timestamp(System.currentTimeMillis()));
+        c.setUpdated_at(Instant.now());
         return candidatoService.save(c);
     }
 
@@ -292,7 +291,7 @@ public class MainGraphQLController {
         if (sueldo != null) o.setSueldo(BigDecimal.valueOf(sueldo));
         if (categoria_id != null) o.setCategoria(categoriaService.findById(categoria_id).orElse(null));
         if (reclutador_id != null) o.setReclutador(reclutadorService.findById(reclutador_id).orElse(null));
-        o.setFecha_publicacion(new Date(System.currentTimeMillis()));
+        o.setFecha_publicacion(Instant.now());
         return ofertaService.save(o);
     }
 
@@ -332,7 +331,7 @@ public class MainGraphQLController {
         p.setFase_alcanzada(fase_alcanzada); p.setId_cv(id_cv);
         if (candidato_id != null) p.setCandidato(candidatoService.findById(candidato_id).orElse(null));
         if (oferta_id != null) p.setOferta(ofertaService.findById(oferta_id).orElse(null));
-        p.setFecha(new Date(System.currentTimeMillis()));
+        p.setFecha(Instant.now());
         return postulacionService.save(p);
     }
 

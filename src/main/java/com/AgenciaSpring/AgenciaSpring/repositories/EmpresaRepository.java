@@ -1,10 +1,13 @@
 package com.AgenciaSpring.AgenciaSpring.repositories;
 
 import com.AgenciaSpring.AgenciaSpring.entities.Empresa;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import java.util.UUID;
 
 @Repository
-public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
+public class EmpresaRepository extends DynamoDbRepository<Empresa, UUID> {
+    public EmpresaRepository(DynamoDbEnhancedClient enhancedClient) {
+        super(enhancedClient, "Empresa", Empresa.class);
+    }
 }

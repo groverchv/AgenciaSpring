@@ -1,25 +1,24 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.*;
 import lombok.Data;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import java.util.UUID;
 
-// Tabla pivot: relaciona Oferta con Habilidades (muchos a muchos) con nivel de importancia
-@Entity
-@Table(name = "oferta_habilidad")
+@DynamoDbBean
 @Data
 public class OfertaHabilidad {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private String nivel_importancia;
-
-    @ManyToOne
-    @JoinColumn(name = "oferta_id")
     private Oferta oferta;
-
-    @ManyToOne
-    @JoinColumn(name = "habilidad_id")
     private Habilidades habilidad;
+
+    @DynamoDbPartitionKey
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 }

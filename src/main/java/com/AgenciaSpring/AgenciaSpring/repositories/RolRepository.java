@@ -1,10 +1,13 @@
 package com.AgenciaSpring.AgenciaSpring.repositories;
 
 import com.AgenciaSpring.AgenciaSpring.entities.Rol;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import java.util.UUID;
 
 @Repository
-public interface RolRepository extends JpaRepository<Rol, UUID> {
+public class RolRepository extends DynamoDbRepository<Rol, UUID> {
+    public RolRepository(DynamoDbEnhancedClient enhancedClient) {
+        super(enhancedClient, "Rol", Rol.class);
+    }
 }
