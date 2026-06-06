@@ -450,4 +450,14 @@ public class MainGraphQLController {
     public Integer clasificarOferta(@Argument UUID id) {
         return machineLearningService.clasificarOferta(id);
     }
+
+    @MutationMapping
+    public String dispararEntrenamientoRandomForestManual() {
+        return machineLearningService.entrenarRandomForestManual();
+    }
+
+    @MutationMapping
+    public String predecirExitoPostulacion(@Argument UUID id) {
+        return machineLearningService.predecirExitoPostulacion(id);
+    }
 }

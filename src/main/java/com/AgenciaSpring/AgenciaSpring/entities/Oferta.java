@@ -19,6 +19,7 @@ public class Oferta {
     private String requisitos;
     private Integer experiencia_tiempo;
     private String modalidad_trabajo;
+    private String nivel_educativo;
     private String estado;
     private BigDecimal sueldo;
     private Integer cluster_id;

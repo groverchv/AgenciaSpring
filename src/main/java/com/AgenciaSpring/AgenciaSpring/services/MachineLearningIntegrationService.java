@@ -4,6 +4,7 @@ import com.AgenciaSpring.AgenciaSpring.dto.KmeansCandidateDto;
 import com.AgenciaSpring.AgenciaSpring.dto.KmeansOfferDto;
 import com.AgenciaSpring.AgenciaSpring.entities.Candidato;
 import com.AgenciaSpring.AgenciaSpring.entities.Oferta;
+import com.AgenciaSpring.AgenciaSpring.entities.Postulacion;
 import com.AgenciaSpring.AgenciaSpring.repositories.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -270,5 +271,129 @@ public class MachineLearningIntegrationService {
             case "doctorado" -> 5;
             default -> 0;
         };
+    }
+    // ══════════════════════ RANDOM FOREST ════════════════════════════════════
+
+    public String entrenarRandomForestManual() {
+        try {
+            List<Postulacion> postulaciones = postulacionRepository.findAll();
+            List<com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto> dtoList = postulaciones.stream()
+                    .map(this::mapearPostulacionADto)
+                    .collect(Collectors.toList());
+            String jsonPayload = objectMapper.writeValueAsString(dtoList);
+
+            String document = """
+                mutation TrainRandomForest($applicationsJson: String!) {
+                  trainRandomForest(applicationsJson: $applicationsJson) {
+                    success
+                    message
+                    totalEntrenados
+                    error
+                  }
+                }
+            """;
+
+            Map<?, ?> response = graphQlClient.document(document)
+                    .variable("applicationsJson", jsonPayload)
+                    .retrieve("trainRandomForest")
+                    .toEntity(Map.class)
+                    .block();
+
+            return "Entrenamiento Random Forest completado: " + response.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error al entrenar Random Forest: " + e.getMessage();
+        }
+    }
+
+    public String predecirExitoPostulacion(java.util.UUID postulacionId) {
+        try {
+            Postulacion p = postulacionRepository.findById(postulacionId)
+                    .orElseThrow(() -> new RuntimeException("Postulación no encontrada"));
+            com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto dto = mapearPostulacionADto(p);
+            // El backend espera la forma en que FastAPI define su mutación.
+            // Según tu esquema, puede ser un JSON simple, lo enviaremos como Array para mantener compatibilidad si es un array 
+            // o como objecto directo. Lo enviaremos como Array de 1.
+            String jsonPayload = objectMapper.writeValueAsString(List.of(dto));
+
+            String document = """
+                mutation PredictSuccess($postulationJson: String!) {
+                  predictSuccess(postulationJson: $postulationJson) {
+                    success
+                    prediction
+                    probability
+                    message
+                    error
+                  }
+                }
+            """;
+
+            Map<?, ?> response = graphQlClient.document(document)
+                    .variable("postulationJson", jsonPayload)
+                    .retrieve("predictSuccess")
+                    .toEntity(Map.class)
+                    .block();
+
+            return "Predicción de Postulación: " + response.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error al predecir: " + e.getMessage();
+        }
+    }
+
+    private com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto mapearPostulacionADto(Postulacion p) {
+        com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto dto = new com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto();
+        Candidato c = p.getCandidato();
+        Oferta o = p.getOferta();
+
+        // 1. Delta Sueldo (Oferta - Candidato)
+        java.math.BigDecimal sueldoOferta = o.getSueldo() != null ? o.getSueldo() : java.math.BigDecimal.ZERO;
+        java.math.BigDecimal sueldoCandidato = c.getSueldo_esperado() != null ? c.getSueldo_esperado() : java.math.BigDecimal.ZERO;
+        dto.setDelta_sueldo(sueldoOferta.subtract(sueldoCandidato));
+
+        // 2. Habilidades
+        List<com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad> ofertaHabilidades = ofertaHabilidadRepository.findByOfertaId(o.getId());
+        List<com.AgenciaSpring.AgenciaSpring.entities.CandidatoHabilidad> candidatoHabilidades = candidatoHabilidadRepository.findByCandidatoId(c.getId());
+        
+        long coincidencias = 0;
+        for (com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad oh : ofertaHabilidades) {
+            boolean candidatoLaTiene = candidatoHabilidades.stream()
+                    .anyMatch(ch -> ch.getHabilidad().getId().equals(oh.getHabilidad().getId()));
+            if (candidatoLaTiene) coincidencias++;
+        }
+        
+        double porcentajeMatch = ofertaHabilidades.isEmpty() ? 100.0 : ((double) coincidencias / ofertaHabilidades.size()) * 100.0;
+        dto.setPorcentaje_match_habilidades(porcentajeMatch);
+
+        int habilidadesExtra = (int) (candidatoHabilidades.size() - coincidencias);
+        dto.setHabilidades_extra(habilidadesExtra > 0 ? habilidadesExtra : 0);
+
+        // 3. Experiencia (Años de experiencia candidato - años requeridos)
+        double expCandidatoAnios = c.getMeses_experiencia_total() != null ? c.getMeses_experiencia_total() / 12.0 : 0.0;
+        double expOfertaAnios = o.getExperiencia_tiempo() != null ? o.getExperiencia_tiempo() : 0.0;
+        dto.setDelta_experiencia(expCandidatoAnios - expOfertaAnios);
+
+        // 4. Nivel Educativo
+        int nivelCandidato = mapearNivelEducativo(c.getNivel_educativo());
+        int nivelOferta = mapearNivelEducativo(o.getNivel_educativo());
+        dto.setCumple_nivel_educativo(nivelCandidato >= nivelOferta ? 1 : 0);
+
+        // 5. Modalidad
+        boolean matchModalidad = c.getModalidad_preferida() != null && 
+                                 c.getModalidad_preferida().equalsIgnoreCase(o.getModalidad_trabajo());
+        dto.setMatch_modalidad(matchModalidad ? 1 : 0);
+
+        // 6. Es Exitosa
+        String fase = p.getFase_alcanzada();
+        int esExitosa = 0;
+        if (fase != null && (fase.equalsIgnoreCase("Contratado") || 
+                             fase.equalsIgnoreCase("Oferta Realizada") || 
+                             fase.equalsIgnoreCase("Aprobó Entrevista Técnica"))) {
+            esExitosa = 1;
+        }
+        dto.setEs_exitosa(esExitosa);
+
+        return dto;
     }
 }

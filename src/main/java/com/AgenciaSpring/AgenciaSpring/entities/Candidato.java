@@ -15,5 +15,6 @@ public class Candidato extends Usuario {
     private String modalidad_preferida;
     private String nivel_educativo;
     private String nacionalidad;
+    private Integer meses_experiencia_total;
     private Integer cluster_id;
 }

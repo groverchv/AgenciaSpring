@@ -1,0 +1,41 @@
+Endpoints y Mutaciones para Machine Learning
+(Para ejecutar en la consola GraphiQL: http://localhost:8080/graphiql)
+
+=========================================================
+1. ALGORITMO K-MEANS (Clustering de Candidatos y Ofertas)
+=========================================================
+
+# A. Entrenar Modelo Manualmente (Masivo)
+# Toma todos los candidatos y ofertas de la BD, los envía a FastAPI y guarda los nuevos clusters en PostgreSQL.
+mutation {
+  dispararEntrenamientoKMeansManual
+}
+
+# B. Clasificar un Candidato Individual (Inferencia)
+# (Reemplazar el texto con un UUID real de la tabla Candidato)
+mutation {
+  clasificarCandidato(id: "UUID-DEL-CANDIDATO")
+}
+
+# C. Clasificar una Oferta Individual (Inferencia)
+# (Reemplazar el texto con un UUID real de la tabla Oferta)
+mutation {
+  clasificarOferta(id: "UUID-DE-LA-OFERTA")
+}
+
+
+=========================================================
+2. ALGORITMO RANDOM FOREST (Predicción de Postulaciones)
+=========================================================
+
+# A. Entrenar Modelo Manualmente (Masivo)
+# Cruza las habilidades, calcula la diferencia de sueldos/experiencia de todas las postulaciones y entrena el árbol.
+mutation {
+  dispararEntrenamientoRandomForestManual
+}
+
+# B. Predecir Éxito de una Postulación Individual (Inferencia)
+# (Reemplazar el texto con un UUID real de la tabla Postulacion)
+mutation {
+  predecirExitoPostulacion(id: "UUID-DE-LA-POSTULACION")
+}
