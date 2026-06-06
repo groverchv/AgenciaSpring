@@ -460,4 +460,31 @@ public class MainGraphQLController {
     public String predecirExitoPostulacion(@Argument UUID id) {
         return machineLearningService.predecirExitoPostulacion(id);
     }
+
+    // ══════════════════════ REGISTRO DISTRIBUIDO (PYTHON) ════════════════════════════════════
+
+    @QueryMapping
+    public Usuario getUserByEmail(@Argument String email) {
+        return usuarioService.findByEmail(email).orElse(null);
+    }
+
+    @MutationMapping
+    public com.AgenciaSpring.AgenciaSpring.dto.CreateUserResponse createUserFromPython(
+            @Argument com.AgenciaSpring.AgenciaSpring.dto.CreateUserFromPythonInput input) {
+        try {
+            Usuario saved = usuarioService.createUserFromPython(input);
+            return new com.AgenciaSpring.AgenciaSpring.dto.CreateUserResponse(
+                    true, 
+                    saved.getId().toString(), 
+                    "Usuario registrado exitosamente desde Python"
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new com.AgenciaSpring.AgenciaSpring.dto.CreateUserResponse(
+                    false, 
+                    null, 
+                    "Error al guardar: " + e.getMessage()
+            );
+        }
+    }
 }

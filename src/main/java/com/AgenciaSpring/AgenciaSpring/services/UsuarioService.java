@@ -15,6 +15,32 @@ public class UsuarioService {
 
     public List<Usuario> findAll() { return repository.findAll(); }
     public Optional<Usuario> findById(UUID id) { return repository.findById(id); }
+    public Optional<Usuario> findByEmail(String email) { return repository.findByEmail(email); }
     public Usuario save(Usuario entity) { return repository.save(entity); }
+    
+    public Usuario createUserFromPython(com.AgenciaSpring.AgenciaSpring.dto.CreateUserFromPythonInput input) {
+        UUID finalId = (input.getUserId() != null && !input.getUserId().isEmpty()) 
+                ? UUID.fromString(input.getUserId()) 
+                : UUID.randomUUID();
+                
+        // Forzamos el insert nativo para burlar la comprobación de actualización de JPA
+        repository.insertUserWithId(
+                finalId, 
+                input.getName(), 
+                input.getEmail(), 
+                input.getPassword(), 
+                input.getVideoId(), 
+                "Activo"
+        );
+        
+        // Ahora sí lo recuperamos por si se necesita
+        Usuario u = new Usuario();
+        u.setId(finalId);
+        u.setNombre(input.getName());
+        u.setEmail(input.getEmail());
+        u.setVideo_id(input.getVideoId());
+        return u;
+    }
+    
     public void deleteById(UUID id) { repository.deleteById(id); }
 }

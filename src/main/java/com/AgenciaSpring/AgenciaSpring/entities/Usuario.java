@@ -20,6 +20,7 @@ public class Usuario {
     private String telefono;
     private String rol;
     private String estado;
+    private String video_id;
     private Timestamp updated_at;
     private Timestamp created_at;
 

@@ -117,6 +117,7 @@ type Query {
     obtenerRol(id: UUID!): Rol
     listarUsuarios: [Usuario]
     obtenerUsuario(id: UUID!): Usuario
+    getUserByEmail(email: String!): Usuario
     listarEmpresas: [Empresa]
     obtenerEmpresa(id: UUID!): Empresa
     listarTrabajos: [Trabajos]
@@ -210,4 +211,21 @@ type Mutation {
     # Random Forest Integrations
     dispararEntrenamientoRandomForestManual: String
     predecirExitoPostulacion(id: UUID!): String
+
+    # Registro Distribuido Python
+    createUserFromPython(input: CreateUserFromPythonInput!): CreateUserResponse
+}
+
+input CreateUserFromPythonInput {
+    userId: String
+    name: String
+    email: String
+    password: String
+    videoId: String
+}
+
+type CreateUserResponse {
+    success: Boolean
+    userId: String
+    message: String
 }
