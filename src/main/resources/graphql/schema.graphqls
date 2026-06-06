@@ -201,4 +201,9 @@ type Mutation {
     # OfertaTrabajo
     crearOfertaTrabajo(oferta_id: UUID, trabajo_id: UUID): OfertaTrabajo
     eliminarOfertaTrabajo(id: UUID!): Boolean
+
+    # Machine Learning Integrations
+    dispararEntrenamientoKMeansManual: String
+    clasificarCandidato(id: UUID!): Int
+    clasificarOferta(id: UUID!): Int
 }

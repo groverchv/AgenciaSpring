@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface PostulacionRepository extends JpaRepository<Postulacion, UUID> {}
+public interface PostulacionRepository extends JpaRepository<Postulacion, UUID> {
+    long countByCandidatoId(UUID candidatoId);
+}

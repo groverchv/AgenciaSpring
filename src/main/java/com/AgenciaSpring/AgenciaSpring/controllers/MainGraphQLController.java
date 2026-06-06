@@ -429,4 +429,25 @@ public class MainGraphQLController {
     public Boolean eliminarOfertaTrabajo(@Argument UUID id) {
         ofertaTrabajoService.deleteById(id); return true;
     }
+
+    // ══════════════════════ MACHINE LEARNING ══════════════════════════════════
+    @Autowired 
+    private MachineLearningIntegrationService machineLearningService;
+
+    @MutationMapping
+    public String dispararEntrenamientoKMeansManual() {
+        String res1 = machineLearningService.entrenarCandidatosManual();
+        String res2 = machineLearningService.entrenarOfertasManual();
+        return res1 + " | " + res2;
+    }
+
+    @MutationMapping
+    public Integer clasificarCandidato(@Argument UUID id) {
+        return machineLearningService.clasificarCandidato(id);
+    }
+
+    @MutationMapping
+    public Integer clasificarOferta(@Argument UUID id) {
+        return machineLearningService.clasificarOferta(id);
+    }
 }
