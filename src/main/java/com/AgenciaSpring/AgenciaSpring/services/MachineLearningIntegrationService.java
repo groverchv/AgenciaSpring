@@ -58,6 +58,11 @@ public class MachineLearningIntegrationService {
                     success
                     message
                     totalEntrenados
+                    asignaciones {
+                      id
+                      clusterId
+                    }
+                    error
                   }
                 }
             """;
@@ -68,6 +73,26 @@ public class MachineLearningIntegrationService {
                     .retrieve("trainKmeansCandidates")
                     .toEntity(Map.class)
                     .block();
+
+            if (response != null && Boolean.TRUE.equals(response.get("success"))) {
+                // Extraer asignaciones y actualizar la base de datos de manera eficiente
+                List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
+                if (asignaciones != null) {
+                    Map<String, Candidato> candidatosMap = candidatos.stream()
+                            .collect(Collectors.toMap(c -> c.getId().toString(), c -> c));
+
+                    for (Map<String, Object> asig : asignaciones) {
+                        String idStr = (String) asig.get("id");
+                        Integer clusterId = (Integer) asig.get("clusterId");
+                        Candidato c = candidatosMap.get(idStr);
+                        if (c != null) {
+                            c.setCluster_id(clusterId);
+                        }
+                    }
+                    // Guardar todos los candidatos actualizados
+                    candidatoRepository.saveAll(candidatos);
+                }
+            }
 
             return "Entrenamiento de Candidatos completado: " + response.toString();
 
@@ -89,6 +114,11 @@ public class MachineLearningIntegrationService {
                     success
                     message
                     totalEntrenados
+                    asignaciones {
+                      id
+                      clusterId
+                    }
+                    error
                   }
                 }
             """;
@@ -99,6 +129,26 @@ public class MachineLearningIntegrationService {
                     .retrieve("trainKmeansOffers")
                     .toEntity(Map.class)
                     .block();
+
+            if (response != null && Boolean.TRUE.equals(response.get("success"))) {
+                // Extraer asignaciones y actualizar la base de datos de manera eficiente
+                List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
+                if (asignaciones != null) {
+                    Map<String, Oferta> ofertasMap = ofertas.stream()
+                            .collect(Collectors.toMap(o -> o.getId().toString(), o -> o));
+
+                    for (Map<String, Object> asig : asignaciones) {
+                        String idStr = (String) asig.get("id");
+                        Integer clusterId = (Integer) asig.get("clusterId");
+                        Oferta o = ofertasMap.get(idStr);
+                        if (o != null) {
+                            o.setCluster_id(clusterId);
+                        }
+                    }
+                    // Guardar todas las ofertas actualizadas
+                    ofertaRepository.saveAll(ofertas);
+                }
+            }
 
             return "Entrenamiento de Ofertas completado: " + response.toString();
 
