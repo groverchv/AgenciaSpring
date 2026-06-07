@@ -6,7 +6,6 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import java.util.UUID;
 
-
 @Service
 public class DynamoDbService {
 

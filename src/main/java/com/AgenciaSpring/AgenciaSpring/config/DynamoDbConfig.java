@@ -15,8 +15,8 @@ public class DynamoDbConfig {
     @Bean
     public DynamoDbClient dynamoDbClient() {
         return DynamoDbClient.builder()
-                .endpointOverride(URI.create("http://localhost:8000"))
-                .region(Region.US_EAST_1) 
+                .endpointOverride(URI.create("http://localhost:8001"))
+                .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create("dummyaccesskey", "dummysecretkey")))
                 .build();

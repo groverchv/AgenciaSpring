@@ -23,22 +23,26 @@ public class UsuarioService {
                 ? UUID.fromString(input.getUserId()) 
                 : UUID.randomUUID();
                 
-        // Forzamos el insert nativo para burlar la comprobación de actualización de JPA
+        // Forzamos el insert nativo para burlar la comprobación de actualización de JPA (ahora DynamoDB)
         repository.insertUserWithId(
                 finalId, 
-                input.getName(), 
+                input.getNombre(),
+                input.getApellido(),
                 input.getEmail(), 
                 input.getPassword(), 
-                input.getVideoId(), 
+                input.getTelefono(),
+                input.getVideo_id(), 
                 "Activo"
         );
         
         // Ahora sí lo recuperamos por si se necesita
         Usuario u = new Usuario();
         u.setId(finalId);
-        u.setNombre(input.getName());
+        u.setNombre(input.getNombre());
+        u.setApellido(input.getApellido());
         u.setEmail(input.getEmail());
-        u.setVideo_id(input.getVideoId());
+        u.setTelefono(input.getTelefono());
+        u.setVideo_id(input.getVideo_id());
         return u;
     }
     

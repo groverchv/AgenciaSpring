@@ -19,12 +19,14 @@ public class UsuarioRepository extends DynamoDbRepository<Usuario, UUID> {
                 .findFirst();
     }
 
-    public void insertUserWithId(UUID id, String nombre, String email, String password, String videoId, String estado) {
+    public void insertUserWithId(UUID id, String nombre, String apellido, String email, String password, String telefono, String videoId, String estado) {
         Usuario u = new Usuario();
         u.setId(id);
         u.setNombre(nombre);
+        u.setApellido(apellido);
         u.setEmail(email);
         u.setPassword(password);
+        u.setTelefono(telefono);
         u.setVideo_id(videoId);
         u.setEstado(estado);
         save(u);
