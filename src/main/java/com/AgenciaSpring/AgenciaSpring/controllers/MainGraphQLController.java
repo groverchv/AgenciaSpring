@@ -72,7 +72,7 @@ public class MainGraphQLController {
 
     @MutationMapping
     public Rol crearRol(@Argument String nombre, @Argument String description) {
-        Rol r = new Rol(); r.setNombre(nombre); r.setDescription(description);
+        Rol r = new Rol(); r.setId(UUID.randomUUID()); r.setNombre(nombre); r.setDescription(description);
         return rolService.save(r);
     }
 
@@ -94,7 +94,7 @@ public class MainGraphQLController {
     @MutationMapping
     public Empresa crearEmpresa(@Argument String nombre_legal, @Argument String nombre_comercial,
                                 @Argument Integer nit, @Argument String direccion, @Argument Integer celular) {
-        Empresa e = new Empresa();
+        Empresa e = new Empresa(); e.setId(UUID.randomUUID());
         e.setNombre_legal(nombre_legal); e.setNombre_comercial(nombre_comercial);
         e.setNit(nit); e.setDireccion(direccion); e.setCelular(celular);
         return empresaService.save(e);
@@ -121,7 +121,7 @@ public class MainGraphQLController {
 
     @MutationMapping
     public Trabajos crearTrabajo(@Argument String nombre, @Argument String codigo) {
-        Trabajos t = new Trabajos(); t.setNombre(nombre); t.setCodigo(codigo);
+        Trabajos t = new Trabajos(); t.setId(UUID.randomUUID()); t.setNombre(nombre); t.setCodigo(codigo);
         return trabajosService.save(t);
     }
 
@@ -142,7 +142,7 @@ public class MainGraphQLController {
 
     @MutationMapping
     public Categoria crearCategoria(@Argument String nombre) {
-        Categoria c = new Categoria(); c.setNombre(nombre);
+        Categoria c = new Categoria(); c.setId(UUID.randomUUID()); c.setNombre(nombre);
         return categoriaService.save(c);
     }
 
@@ -165,11 +165,16 @@ public class MainGraphQLController {
                                 @Argument String email, @Argument String password,
                                 @Argument String telefono, @Argument UUID rol_id, @Argument String estado) {
         Usuario u = new Usuario();
+        u.setId(UUID.randomUUID());
         u.setNombre(nombre); u.setApellido(apellido); u.setEmail(email);
         u.setPassword(password != null ? passwordEncoder.encode(password) : null); u.setTelefono(telefono); u.setEstado(estado);
         u.setCreated_at(Instant.now());
         u.setUpdated_at(Instant.now());
-        if (rol_id != null) u.setRolObj(rolService.findById(rol_id).orElse(null));
+        if (rol_id != null) {
+            Rol r = rolService.findById(rol_id).orElse(null);
+            u.setRolObj(r);
+            if (r != null) u.setRol(r.getNombre());
+        }
         return usuarioService.save(u);
     }
 
@@ -201,12 +206,23 @@ public class MainGraphQLController {
                                       @Argument Integer telefono, @Argument String cargo,
                                       @Argument UUID empresa_id, @Argument String estado) {
         Reclutador r = new Reclutador();
+        r.setId(UUID.randomUUID());
         r.setNombre(nombre); r.setApellido(apellido); r.setEmail(email);
         r.setPassword(password != null ? passwordEncoder.encode(password) : null); r.setTelefono(telefono != null ? telefono.toString() : null);
         r.setTelefonoReclutador(telefono); r.setCargo(cargo); r.setEstado(estado);
         r.setCreated_at(Instant.now());
         r.setUpdated_at(Instant.now());
         if (empresa_id != null) r.setEmpresa(empresaService.findById(empresa_id).orElse(null));
+        
+        Rol rol = rolService.findAll().stream()
+                .filter(x -> "Reclutador".equalsIgnoreCase(x.getNombre()))
+                .findFirst()
+                .orElse(null);
+        if (rol != null) {
+            r.setRolObj(rol);
+            r.setRol(rol.getNombre());
+        }
+        
         return reclutadorService.save(r);
     }
 
@@ -223,6 +239,18 @@ public class MainGraphQLController {
         if (estado != null) r.setEstado(estado);
         if (empresa_id != null) r.setEmpresa(empresaService.findById(empresa_id).orElse(null));
         r.setUpdated_at(Instant.now());
+        
+        if (r.getRolObj() == null) {
+            Rol rol = rolService.findAll().stream()
+                    .filter(x -> "Reclutador".equalsIgnoreCase(x.getNombre()))
+                    .findFirst()
+                    .orElse(null);
+            if (rol != null) {
+                r.setRolObj(rol);
+                r.setRol(rol.getNombre());
+            }
+        }
+        
         return reclutadorService.save(r);
     }
 
@@ -241,6 +269,7 @@ public class MainGraphQLController {
                                     @Argument String nacionalidad, @Argument Integer cluster_id,
                                     @Argument String estado) {
         Candidato c = new Candidato();
+        c.setId(UUID.randomUUID());
         c.setNombre(nombre); c.setApellido(apellido); c.setEmail(email);
         c.setPassword(password != null ? passwordEncoder.encode(password) : null); c.setEstado(estado); c.setRegistro(registro);
         c.setNacionalidad(nacionalidad); c.setCluster_id(cluster_id);
@@ -248,6 +277,16 @@ public class MainGraphQLController {
         if (sueldo_esperado != null) c.setSueldo_esperado(BigDecimal.valueOf(sueldo_esperado));
         c.setCreated_at(Instant.now());
         c.setUpdated_at(Instant.now());
+        
+        Rol rol = rolService.findAll().stream()
+                .filter(x -> "Candidato".equalsIgnoreCase(x.getNombre()))
+                .findFirst()
+                .orElse(null);
+        if (rol != null) {
+            c.setRolObj(rol);
+            c.setRol(rol.getNombre());
+        }
+        
         return candidatoService.save(c);
     }
 
@@ -269,6 +308,18 @@ public class MainGraphQLController {
         if (cluster_id != null) c.setCluster_id(cluster_id);
         if (estado != null) c.setEstado(estado);
         c.setUpdated_at(Instant.now());
+        
+        if (c.getRolObj() == null) {
+            Rol rol = rolService.findAll().stream()
+                    .filter(x -> "Candidato".equalsIgnoreCase(x.getNombre()))
+                    .findFirst()
+                    .orElse(null);
+            if (rol != null) {
+                c.setRolObj(rol);
+                c.setRol(rol.getNombre());
+            }
+        }
+        
         return candidatoService.save(c);
     }
 
@@ -287,6 +338,7 @@ public class MainGraphQLController {
                               @Argument Integer cluster_id,
                               @Argument UUID categoria_id, @Argument UUID reclutador_id) {
         Oferta o = new Oferta();
+        o.setId(UUID.randomUUID());
         o.setTitulo(titulo); o.setDescripcion(descripcion); o.setContrato(contrato);
         o.setRequisitos(requisitos); o.setExperiencia_tiempo(experiencia_tiempo);
         o.setModalidad_trabajo(modalidad_trabajo); o.setEstado(estado); o.setCluster_id(cluster_id);
@@ -370,6 +422,7 @@ public class MainGraphQLController {
     public Postulacion crearPostulacion(@Argument String fase_alcanzada, @Argument String id_cv,
                                         @Argument UUID candidato_id, @Argument UUID oferta_id) {
         Postulacion p = new Postulacion();
+        p.setId(UUID.randomUUID());
         p.setFase_alcanzada(fase_alcanzada); p.setId_cv(id_cv);
         if (candidato_id != null) p.setCandidato(candidatoService.findById(candidato_id).orElse(null));
         if (oferta_id != null) p.setOferta(ofertaService.findById(oferta_id).orElse(null));
@@ -398,7 +451,7 @@ public class MainGraphQLController {
 
     @MutationMapping
     public Habilidades crearHabilidad(@Argument String nombre) {
-        Habilidades h = new Habilidades(); h.setNombre(nombre);
+        Habilidades h = new Habilidades(); h.setId(UUID.randomUUID()); h.setNombre(nombre);
         return habilidadesService.save(h);
     }
 
@@ -419,6 +472,7 @@ public class MainGraphQLController {
     @MutationMapping
     public CandidatoHabilidad crearCandidatoHabilidad(@Argument UUID candidato_id, @Argument UUID habilidad_id) {
         CandidatoHabilidad ch = new CandidatoHabilidad();
+        ch.setId(UUID.randomUUID());
         if (candidato_id != null) ch.setCandidato(candidatoService.findById(candidato_id).orElse(null));
         if (habilidad_id != null) ch.setHabilidad(habilidadesService.findById(habilidad_id).orElse(null));
         return candidatoHabilidadService.save(ch);
@@ -435,6 +489,7 @@ public class MainGraphQLController {
     public OfertaHabilidad crearOfertaHabilidad(@Argument String nivel_importancia,
                                                 @Argument UUID oferta_id, @Argument UUID habilidad_id) {
         OfertaHabilidad oh = new OfertaHabilidad();
+        oh.setId(UUID.randomUUID());
         oh.setNivel_importancia(nivel_importancia);
         if (oferta_id != null) oh.setOferta(ofertaService.findById(oferta_id).orElse(null));
         if (habilidad_id != null) oh.setHabilidad(habilidadesService.findById(habilidad_id).orElse(null));
@@ -461,6 +516,7 @@ public class MainGraphQLController {
     @MutationMapping
     public OfertaTrabajo crearOfertaTrabajo(@Argument UUID oferta_id, @Argument UUID trabajo_id) {
         OfertaTrabajo ot = new OfertaTrabajo();
+        ot.setId(UUID.randomUUID());
         if (oferta_id != null) ot.setOferta(ofertaService.findById(oferta_id).orElse(null));
         if (trabajo_id != null) ot.setTrabajos(trabajosService.findById(trabajo_id).orElse(null));
         return ofertaTrabajoService.save(ot);

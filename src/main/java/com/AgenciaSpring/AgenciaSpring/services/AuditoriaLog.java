@@ -1,21 +1,26 @@
 package com.AgenciaSpring.AgenciaSpring.services;
 
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
-// Modelo o Entidad especifica para DynamoDB (ej. Historial/Auditoria)
-@DynamoDbBean
+@Entity
+@Table(name = "auditoria_logs")
 public class AuditoriaLog {
 
     public AuditoriaLog() {
     }
 
+    @Id
     private String id;
     private String accion;
+    
+    @Column(length = 2000)
     private String detalle;
+    
     private String fecha;
 
-    @DynamoDbPartitionKey
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getAccion() { return accion; }

@@ -1,23 +1,21 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import java.util.UUID;
 
-@DynamoDbBean
+@Entity
+@Table(name = "oferta_trabajos")
 @Data
 public class OfertaTrabajo {
+    @Id
     private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "oferta_id")
     private Oferta oferta;
+
+    @ManyToOne
+    @JoinColumn(name = "trabajo_id")
     private Trabajos trabajos;
-
-    @DynamoDbPartitionKey
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
 }

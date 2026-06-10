@@ -1,23 +1,20 @@
 package com.AgenciaSpring.AgenciaSpring.services;
 
+import com.AgenciaSpring.AgenciaSpring.repositories.AuditoriaLogRepository;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import java.util.UUID;
 
 @Service
 public class DynamoDbService {
 
-    private final DynamoDbTable<AuditoriaLog> auditoriaTable;
+    private final AuditoriaLogRepository repository;
 
-    public DynamoDbService(DynamoDbEnhancedClient enhancedClient) {
-        // Asume que la tabla se llama "AuditoriaLog" en AWS DynamoDB
-        this.auditoriaTable = enhancedClient.table("AuditoriaLog", TableSchema.fromBean(AuditoriaLog.class));
+    public DynamoDbService(AuditoriaLogRepository repository) {
+        this.repository = repository;
     }
 
     public void crearTabla() {
-        auditoriaTable.createTable();
+        // No-op: JPA auto-creates tables via spring.jpa.hibernate.ddl-auto=update
     }
 
     public void guardarLog(String accion, String detalle) {
@@ -26,12 +23,10 @@ public class DynamoDbService {
         log.setAccion(accion);
         log.setDetalle(detalle);
         log.setFecha(new java.util.Date().toString());
-        auditoriaTable.putItem(log);
+        repository.save(log);
     }
 
     public AuditoriaLog obtenerLog(String id) {
-        AuditoriaLog logQuery = new AuditoriaLog();
-        logQuery.setId(id);
-        return auditoriaTable.getItem(logQuery);
+        return repository.findById(id).orElse(null);
     }
 }

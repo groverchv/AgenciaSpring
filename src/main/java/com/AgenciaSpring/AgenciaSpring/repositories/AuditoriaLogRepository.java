@@ -1,10 +1,9 @@
 package com.AgenciaSpring.AgenciaSpring.repositories;
 
-import com.AgenciaSpring.AgenciaSpring.entities.Categoria;
+import com.AgenciaSpring.AgenciaSpring.services.AuditoriaLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.UUID;
 
 @Repository
-public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
+public interface AuditoriaLogRepository extends JpaRepository<AuditoriaLog, String> {
 }

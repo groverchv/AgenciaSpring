@@ -1,11 +1,15 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import java.math.BigDecimal;
 
-@DynamoDbBean
+@Entity
+@Table(name = "candidatos")
+@PrimaryKeyJoinColumn(name = "id")
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Candidato extends Usuario {

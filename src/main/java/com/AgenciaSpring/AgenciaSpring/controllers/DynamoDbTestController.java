@@ -16,9 +16,9 @@ public class DynamoDbTestController {
     public String setupTable() {
         try {
             dynamoDbService.crearTabla();
-            return "Tabla 'AuditoriaLog' creada exitosamente en DynamoDB local.";
+            return "Tabla 'AuditoriaLog' inicializada exitosamente en PostgreSQL.";
         } catch (Exception e) {
-            return "Error al crear la tabla: " + e.getMessage();
+            return "Error al inicializar la tabla: " + e.getMessage();
         }
     }
 
@@ -26,7 +26,7 @@ public class DynamoDbTestController {
     public String saveLog(@RequestParam String accion, @RequestParam String detalle) {
         try {
             dynamoDbService.guardarLog(accion, detalle);
-            return "Log guardado exitosamente en DynamoDB local.";
+            return "Log guardado exitosamente en PostgreSQL.";
         } catch (Exception e) {
             return "Error al guardar el log: " + e.getMessage();
         }
