@@ -11,6 +11,7 @@ type Usuario {
     nombre: String
     apellido: String
     email: String
+    password: String
     telefono: String
     rolObj: Rol
     estado: String
@@ -30,6 +31,7 @@ type Reclutador {
     nombre: String
     apellido: String
     email: String
+    password: String
     telefono: String
     telefonoReclutador: Int
     cargo: String
@@ -42,6 +44,7 @@ type Candidato {
     nombre: String
     apellido: String
     email: String
+    password: String
     registro: Int
     sueldo_esperado: Float
     modalidad_preferida: String
@@ -214,14 +217,17 @@ type Mutation {
 
     # Registro Distribuido Python
     createUserFromPython(input: CreateUserFromPythonInput!): CreateUserResponse
+    actualizarVideoId(id: UUID!, videoId: String!): Usuario
 }
 
 input CreateUserFromPythonInput {
     userId: String
-    name: String
+    nombre: String
+    apellido: String
     email: String
     password: String
-    videoId: String
+    telefono: String
+    video_id: String
 }
 
 type CreateUserResponse {

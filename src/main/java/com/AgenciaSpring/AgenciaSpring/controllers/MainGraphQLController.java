@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @Controller
 public class MainGraphQLController {
 
+    @Autowired private BCryptPasswordEncoder passwordEncoder;
     @Autowired private RolService rolService;
     @Autowired private EmpresaService empresaService;
     @Autowired private UsuarioService usuarioService;
@@ -164,7 +166,7 @@ public class MainGraphQLController {
                                 @Argument String telefono, @Argument UUID rol_id, @Argument String estado) {
         Usuario u = new Usuario();
         u.setNombre(nombre); u.setApellido(apellido); u.setEmail(email);
-        u.setPassword(password); u.setTelefono(telefono); u.setEstado(estado);
+        u.setPassword(password != null ? passwordEncoder.encode(password) : null); u.setTelefono(telefono); u.setEstado(estado);
         u.setCreated_at(Instant.now());
         u.setUpdated_at(Instant.now());
         if (rol_id != null) u.setRolObj(rolService.findById(rol_id).orElse(null));
@@ -200,7 +202,7 @@ public class MainGraphQLController {
                                       @Argument UUID empresa_id, @Argument String estado) {
         Reclutador r = new Reclutador();
         r.setNombre(nombre); r.setApellido(apellido); r.setEmail(email);
-        r.setPassword(password); r.setTelefono(telefono != null ? telefono.toString() : null);
+        r.setPassword(password != null ? passwordEncoder.encode(password) : null); r.setTelefono(telefono != null ? telefono.toString() : null);
         r.setTelefonoReclutador(telefono); r.setCargo(cargo); r.setEstado(estado);
         r.setCreated_at(Instant.now());
         r.setUpdated_at(Instant.now());
@@ -240,7 +242,7 @@ public class MainGraphQLController {
                                     @Argument String estado) {
         Candidato c = new Candidato();
         c.setNombre(nombre); c.setApellido(apellido); c.setEmail(email);
-        c.setPassword(password); c.setEstado(estado); c.setRegistro(registro);
+        c.setPassword(password != null ? passwordEncoder.encode(password) : null); c.setEstado(estado); c.setRegistro(registro);
         c.setNacionalidad(nacionalidad); c.setCluster_id(cluster_id);
         c.setModalidad_preferida(modalidad_preferida); c.setNivel_educativo(nivel_educativo);
         if (sueldo_esperado != null) c.setSueldo_esperado(BigDecimal.valueOf(sueldo_esperado));
@@ -290,7 +292,27 @@ public class MainGraphQLController {
         o.setModalidad_trabajo(modalidad_trabajo); o.setEstado(estado); o.setCluster_id(cluster_id);
         if (sueldo != null) o.setSueldo(BigDecimal.valueOf(sueldo));
         if (categoria_id != null) o.setCategoria(categoriaService.findById(categoria_id).orElse(null));
-        if (reclutador_id != null) o.setReclutador(reclutadorService.findById(reclutador_id).orElse(null));
+        if (reclutador_id != null) {
+            Reclutador rec = reclutadorService.findById(reclutador_id).orElse(null);
+            if (rec == null) {
+                Usuario usr = usuarioService.findById(reclutador_id).orElse(null);
+                if (usr != null) {
+                    rec = new Reclutador();
+                    rec.setId(usr.getId());
+                    rec.setNombre(usr.getNombre());
+                    rec.setApellido(usr.getApellido());
+                    rec.setEmail(usr.getEmail());
+                    rec.setTelefono(usr.getTelefono());
+                    rec.setEstado(usr.getEstado());
+                    rec.setVideo_id(usr.getVideo_id());
+                    rec.setCreated_at(usr.getCreated_at());
+                    rec.setUpdated_at(usr.getUpdated_at());
+                    rec.setRolObj(usr.getRolObj());
+                    rec.setRol(usr.getRol());
+                }
+            }
+            o.setReclutador(rec);
+        }
         o.setFecha_publicacion(Instant.now());
         return ofertaService.save(o);
     }
@@ -313,7 +335,27 @@ public class MainGraphQLController {
         if (cluster_id != null) o.setCluster_id(cluster_id);
         if (sueldo != null) o.setSueldo(BigDecimal.valueOf(sueldo));
         if (categoria_id != null) o.setCategoria(categoriaService.findById(categoria_id).orElse(null));
-        if (reclutador_id != null) o.setReclutador(reclutadorService.findById(reclutador_id).orElse(null));
+        if (reclutador_id != null) {
+            Reclutador rec = reclutadorService.findById(reclutador_id).orElse(null);
+            if (rec == null) {
+                Usuario usr = usuarioService.findById(reclutador_id).orElse(null);
+                if (usr != null) {
+                    rec = new Reclutador();
+                    rec.setId(usr.getId());
+                    rec.setNombre(usr.getNombre());
+                    rec.setApellido(usr.getApellido());
+                    rec.setEmail(usr.getEmail());
+                    rec.setTelefono(usr.getTelefono());
+                    rec.setEstado(usr.getEstado());
+                    rec.setVideo_id(usr.getVideo_id());
+                    rec.setCreated_at(usr.getCreated_at());
+                    rec.setUpdated_at(usr.getUpdated_at());
+                    rec.setRolObj(usr.getRolObj());
+                    rec.setRol(usr.getRol());
+                }
+            }
+            o.setReclutador(rec);
+        }
         return ofertaService.save(o);
     }
 
@@ -464,7 +506,19 @@ public class MainGraphQLController {
 
     @QueryMapping
     public Usuario getUserByEmail(@Argument String email) {
-        return usuarioService.findByEmail(email).orElse(null);
+        java.util.Optional<Usuario> u = usuarioService.findByEmail(email);
+        if (u.isPresent()) {
+            return u.get();
+        }
+        java.util.Optional<Reclutador> r = reclutadorService.findByEmail(email);
+        if (r.isPresent()) {
+            return r.get();
+        }
+        java.util.Optional<Candidato> c = candidatoService.findByEmail(email);
+        if (c.isPresent()) {
+            return c.get();
+        }
+        return null;
     }
 
     @MutationMapping
@@ -485,5 +539,32 @@ public class MainGraphQLController {
                     "Error al guardar: " + e.getMessage()
             );
         }
+    }
+
+    @MutationMapping
+    public Usuario actualizarVideoId(@Argument UUID id, @Argument String videoId) {
+        try {
+            java.util.Optional<Usuario> u = usuarioService.findById(id);
+            if (u.isPresent()) {
+                Usuario usr = u.get();
+                usr.setVideo_id(videoId);
+                return usuarioService.save(usr);
+            }
+            java.util.Optional<Reclutador> r = reclutadorService.findById(id);
+            if (r.isPresent()) {
+                Reclutador rec = r.get();
+                rec.setVideo_id(videoId);
+                return reclutadorService.save(rec);
+            }
+            java.util.Optional<Candidato> c = candidatoService.findById(id);
+            if (c.isPresent()) {
+                Candidato cand = c.get();
+                cand.setVideo_id(videoId);
+                return candidatoService.save(cand);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

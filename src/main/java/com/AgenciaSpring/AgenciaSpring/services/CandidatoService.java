@@ -17,4 +17,11 @@ public class CandidatoService {
     public Optional<Candidato> findById(UUID id) { return repository.findById(id); }
     public Candidato save(Candidato entity) { return repository.save(entity); }
     public void deleteById(UUID id) { repository.deleteById(id); }
+
+    public Optional<Candidato> findByEmail(String email) {
+        if (email == null) return Optional.empty();
+        return repository.findAll().stream()
+                .filter(c -> email.equalsIgnoreCase(c.getEmail()))
+                .findFirst();
+    }
 }

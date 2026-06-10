@@ -26,6 +26,16 @@ public class DynamoDbRepository<T, ID> {
     }
 
     public T save(T entity) {
+        try {
+            java.lang.reflect.Method getIdMethod = clazz.getMethod("getId");
+            Object id = getIdMethod.invoke(entity);
+            if (id == null) {
+                java.lang.reflect.Method setIdMethod = clazz.getMethod("setId", java.util.UUID.class);
+                setIdMethod.invoke(entity, java.util.UUID.randomUUID());
+            }
+        } catch (Exception e) {
+            // Ignorar errores de reflexión si no tiene getId/setId o si no es UUID
+        }
         table.putItem(entity);
         return entity;
     }

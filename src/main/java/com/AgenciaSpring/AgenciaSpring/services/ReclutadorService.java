@@ -17,4 +17,11 @@ public class ReclutadorService {
     public Optional<Reclutador> findById(UUID id) { return repository.findById(id); }
     public Reclutador save(Reclutador entity) { return repository.save(entity); }
     public void deleteById(UUID id) { repository.deleteById(id); }
+
+    public Optional<Reclutador> findByEmail(String email) {
+        if (email == null) return Optional.empty();
+        return repository.findAll().stream()
+                .filter(r -> email.equalsIgnoreCase(r.getEmail()))
+                .findFirst();
+    }
 }
