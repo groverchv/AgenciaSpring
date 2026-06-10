@@ -31,17 +31,14 @@ public class UsuarioService {
                 ? UUID.fromString(input.getUserId()) 
                 : UUID.randomUUID();
                 
-        String encodedPassword = (input.getPassword() != null) ? passwordEncoder.encode(input.getPassword()) : null;
-                
-        // Forzamos el insert nativo para burlar la comprobación de actualización de JPA (ahora DynamoDB)
+        // Forzamos el insert nativo para burlar la comprobación de actualización de JPA
         repository.insertUserWithId(
                 finalId, 
                 input.getNombre(),
                 input.getApellido(),
                 input.getEmail(), 
-                encodedPassword, 
-                input.getTelefono(),
-                input.getVideo_id(), 
+                input.getPassword(), 
+                input.getVideoId(), 
                 "Activo"
         );
         
@@ -51,23 +48,7 @@ public class UsuarioService {
         u.setNombre(input.getNombre());
         u.setApellido(input.getApellido());
         u.setEmail(input.getEmail());
-        u.setTelefono(input.getTelefono());
-        u.setVideo_id(input.getVideo_id());
-        u.setEstado("Activo");
-
-        // Buscar el rol "Candidato" dinámicamente y asignarlo
-        try {
-            java.util.Optional<com.AgenciaSpring.AgenciaSpring.entities.Rol> candidateRol = rolRepository.findAll().stream()
-                    .filter(r -> "candidato".equalsIgnoreCase(r.getNombre()))
-                    .findFirst();
-            if (candidateRol.isPresent()) {
-                u.setRolObj(candidateRol.get());
-                repository.save(u);
-            }
-        } catch (Exception e) {
-            System.err.println("Error al buscar/asignar rol de candidato: " + e.getMessage());
-        }
-
+        u.setVideo_id(input.getVideoId());
         return u;
     }
     
