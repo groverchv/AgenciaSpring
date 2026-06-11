@@ -26,6 +26,9 @@ public class Usuario {
     private Instant updated_at;
     private Instant created_at;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     @ManyToOne
     @JoinColumn(name = "rol_id")
     private Rol rolObj;

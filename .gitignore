@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Firebase admin SDK secret credentials
+src/main/resources/firebaseadmin.json
