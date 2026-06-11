@@ -13,7 +13,7 @@ public class FastApiGraphQLConfig {
         // Configuramos la URL del microservicio de Python (FastAPI)
         // Puedes cambiar esta URL si FastAPI corre en otro puerto u host
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:8083/graphql")
+                .baseUrl("http://localhost:8000/graphql")
                 .build();
 
         return HttpGraphQlClient.builder(webClient).build();

@@ -404,7 +404,7 @@ public class MachineLearningIntegrationService {
             Postulacion p = postulacionRepository.findById(postulacionId)
                     .orElseThrow(() -> new RuntimeException("Postulación no encontrada"));
             com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto dto = mapearPostulacionADto(p);
-            String jsonPayload = objectMapper.writeValueAsString(List.of(dto));
+            String jsonPayload = objectMapper.writeValueAsString(dto);
 
             String document = """
                 mutation PredictSuccess($postulationJson: String!) {
@@ -452,16 +452,16 @@ public class MachineLearningIntegrationService {
             if (candidatoLaTiene) coincidencias++;
         }
         
-        double porcentajeMatch = ofertaHabilidades.isEmpty() ? 100.0 : ((double) coincidencias / ofertaHabilidades.size()) * 100.0;
+        double porcentajeMatch = ofertaHabilidades.isEmpty() ? 1.0 : ((double) coincidencias / ofertaHabilidades.size());
         dto.setPorcentaje_match_habilidades(porcentajeMatch);
 
         int habilidadesExtra = (int) (candidatoHabilidades.size() - coincidencias);
         dto.setHabilidades_extra(habilidadesExtra > 0 ? habilidadesExtra : 0);
 
-        // 3. Experiencia (Años de experiencia candidato - años requeridos)
-        double expCandidatoAnios = c.getMeses_experiencia_total() != null ? c.getMeses_experiencia_total() / 12.0 : 0.0;
-        double expOfertaAnios = o.getExperiencia_tiempo() != null ? o.getExperiencia_tiempo() : 0.0;
-        dto.setDelta_experiencia(expCandidatoAnios - expOfertaAnios);
+        // 3. Experiencia (Diferencia en meses de experiencia: candidato_meses - oferta_meses)
+        double expCandidatoMeses = c.getMeses_experiencia_total() != null ? c.getMeses_experiencia_total() : 0.0;
+        double expOfertaMeses = o.getExperiencia_tiempo() != null ? o.getExperiencia_tiempo() : 0.0;
+        dto.setDelta_experiencia(expCandidatoMeses - expOfertaMeses);
 
         // 4. Nivel Educativo
         int nivelCandidato = mapearNivelEducativo(c.getNivel_educativo());
