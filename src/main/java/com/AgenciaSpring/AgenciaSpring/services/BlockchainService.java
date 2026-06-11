@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 @Service
 public class BlockchainService {
-    private static final Logger logger = Logger.getLogger(BlockchainService.name);
+    private static final Logger logger = Logger.getLogger(BlockchainService.class.getName());
     private final RestTemplate restTemplate;
 
     @Value("${blockchain.node.url}")
@@ -44,7 +44,7 @@ public class BlockchainService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 logger.info("Transacción registrada con éxito en el blockchain para destinatario: " + recipient);
-                
+
                 // Intentar minar el bloque automáticamente para procesar la transacción
                 minarBloque();
                 return true;

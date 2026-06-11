@@ -24,4 +24,8 @@ public class CandidatoService {
                 .filter(c -> email.equalsIgnoreCase(c.getEmail()))
                 .findFirst();
     }
+
+    public void insertCandidatoId(UUID id) {
+        repository.insertCandidatoId(id);
+    }
 }

@@ -24,6 +24,8 @@ type Empresa {
     nit: Int
     direccion: String
     celular: Int
+    latitud: Float
+    longitud: Float
 }
 
 type Reclutador {
@@ -160,8 +162,8 @@ type Mutation {
     eliminarRol(id: UUID!): Boolean
 
     # Empresa
-    crearEmpresa(nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int): Empresa
-    actualizarEmpresa(id: UUID!, nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int): Empresa
+    crearEmpresa(nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int, latitud: Float, longitud: Float): Empresa
+    actualizarEmpresa(id: UUID!, nombre_legal: String, nombre_comercial: String, nit: Int, direccion: String, celular: Int, latitud: Float, longitud: Float): Empresa
     eliminarEmpresa(id: UUID!): Boolean
 
     # Trabajos

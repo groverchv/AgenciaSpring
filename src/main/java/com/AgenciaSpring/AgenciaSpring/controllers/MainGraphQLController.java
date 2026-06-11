@@ -97,22 +97,27 @@ public class MainGraphQLController {
 
     @MutationMapping
     public Empresa crearEmpresa(@Argument String nombre_legal, @Argument String nombre_comercial,
-                                @Argument Integer nit, @Argument String direccion, @Argument Integer celular) {
+                                @Argument Integer nit, @Argument String direccion, @Argument Integer celular,
+                                @Argument Double latitud, @Argument Double longitud) {
         Empresa e = new Empresa(); e.setId(UUID.randomUUID());
         e.setNombre_legal(nombre_legal); e.setNombre_comercial(nombre_comercial);
         e.setNit(nit); e.setDireccion(direccion); e.setCelular(celular);
+        e.setLatitud(latitud); e.setLongitud(longitud);
         return empresaService.save(e);
     }
 
     @MutationMapping
     public Empresa actualizarEmpresa(@Argument UUID id, @Argument String nombre_legal, @Argument String nombre_comercial,
-                                     @Argument Integer nit, @Argument String direccion, @Argument Integer celular) {
+                                     @Argument Integer nit, @Argument String direccion, @Argument Integer celular,
+                                     @Argument Double latitud, @Argument Double longitud) {
         Empresa e = empresaService.findById(id).orElseThrow();
         if (nombre_legal != null) e.setNombre_legal(nombre_legal);
         if (nombre_comercial != null) e.setNombre_comercial(nombre_comercial);
         if (nit != null) e.setNit(nit);
         if (direccion != null) e.setDireccion(direccion);
         if (celular != null) e.setCelular(celular);
+        if (latitud != null) e.setLatitud(latitud);
+        if (longitud != null) e.setLongitud(longitud);
         return empresaService.save(e);
     }
 
