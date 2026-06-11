@@ -30,6 +30,7 @@ public class MainGraphQLController {
     @Autowired private HabilidadesService habilidadesService;
     @Autowired private CandidatoHabilidadService candidatoHabilidadService;
     @Autowired private OfertaHabilidadService ofertaHabilidadService;
+    @Autowired private ClusterService clusterService;
 
     // ══════════════════════ QUERIES ══════════════════════════════════════════
 
@@ -67,6 +68,9 @@ public class MainGraphQLController {
 
     @QueryMapping public List<CandidatoHabilidad> listarCandidatoHabilidades() { return candidatoHabilidadService.findAll(); }
     @QueryMapping public List<OfertaHabilidad>   listarOfertaHabilidades()    { return ofertaHabilidadService.findAll(); }
+    @QueryMapping public List<Cluster>           listarClusters()             { return clusterService.findAll(); }
+    @QueryMapping public Cluster                 obtenerCluster(@Argument UUID id) { return clusterService.findById(id).orElse(null); }
+    @QueryMapping public List<Cluster>           listarClustersPorTipo(@Argument String tipo) { return clusterService.findByTipo(tipo); }
 
     // ══════════════════════ MUTATIONS - ROL ══════════════════════════════════
 
@@ -198,6 +202,23 @@ public class MainGraphQLController {
         usuarioService.deleteById(id); return true;
     }
 
+    // ══════════════════════ MUTATIONS - CLUSTER ═══════════════════════════════
+    @MutationMapping
+    public Cluster crearCluster(@Argument Integer clusterNumero, @Argument String nombre, @Argument String tipo) {
+        Cluster c = new Cluster();
+        c.setId(UUID.randomUUID());
+        c.setClusterNumero(clusterNumero);
+        c.setNombre(nombre);
+        c.setTipo(tipo);
+        c.setFechaEntrenamiento(Instant.now());
+        return clusterService.save(c);
+    }
+
+    @MutationMapping
+    public Boolean eliminarCluster(@Argument UUID id) {
+        clusterService.deleteById(id); return true;
+    }
+
     // ══════════════════════ MUTATIONS - RECLUTADOR ════════════════════════════
 
     @MutationMapping
@@ -266,13 +287,16 @@ public class MainGraphQLController {
                                     @Argument String email, @Argument String password,
                                     @Argument Integer registro, @Argument Double sueldo_esperado,
                                     @Argument String modalidad_preferida, @Argument String nivel_educativo,
-                                    @Argument String nacionalidad, @Argument Integer cluster_id,
+                                    @Argument String nacionalidad, @Argument UUID cluster_id,
                                     @Argument String estado) {
         Candidato c = new Candidato();
         c.setId(UUID.randomUUID());
         c.setNombre(nombre); c.setApellido(apellido); c.setEmail(email);
         c.setPassword(password != null ? passwordEncoder.encode(password) : null); c.setEstado(estado); c.setRegistro(registro);
-        c.setNacionalidad(nacionalidad); c.setCluster_id(cluster_id);
+        c.setNacionalidad(nacionalidad);
+        if (cluster_id != null) {
+            c.setCluster(clusterService.findById(cluster_id).orElse(null));
+        }
         c.setModalidad_preferida(modalidad_preferida); c.setNivel_educativo(nivel_educativo);
         if (sueldo_esperado != null) c.setSueldo_esperado(BigDecimal.valueOf(sueldo_esperado));
         c.setCreated_at(Instant.now());
@@ -295,7 +319,7 @@ public class MainGraphQLController {
                                          @Argument String email, @Argument Integer registro,
                                          @Argument Double sueldo_esperado, @Argument String modalidad_preferida,
                                          @Argument String nivel_educativo, @Argument String nacionalidad,
-                                         @Argument Integer cluster_id, @Argument String estado) {
+                                         @Argument UUID cluster_id, @Argument String estado) {
         Candidato c = candidatoService.findById(id).orElseThrow();
         if (nombre != null) c.setNombre(nombre);
         if (apellido != null) c.setApellido(apellido);
@@ -305,7 +329,9 @@ public class MainGraphQLController {
         if (modalidad_preferida != null) c.setModalidad_preferida(modalidad_preferida);
         if (nivel_educativo != null) c.setNivel_educativo(nivel_educativo);
         if (nacionalidad != null) c.setNacionalidad(nacionalidad);
-        if (cluster_id != null) c.setCluster_id(cluster_id);
+        if (cluster_id != null) {
+            c.setCluster(clusterService.findById(cluster_id).orElse(null));
+        }
         if (estado != null) c.setEstado(estado);
         c.setUpdated_at(Instant.now());
         
@@ -335,13 +361,16 @@ public class MainGraphQLController {
                               @Argument String contrato, @Argument String requisitos,
                               @Argument Integer experiencia_tiempo, @Argument String modalidad_trabajo,
                               @Argument String estado, @Argument Double sueldo,
-                              @Argument Integer cluster_id,
+                              @Argument UUID cluster_id,
                               @Argument UUID categoria_id, @Argument UUID reclutador_id) {
         Oferta o = new Oferta();
         o.setId(UUID.randomUUID());
         o.setTitulo(titulo); o.setDescripcion(descripcion); o.setContrato(contrato);
         o.setRequisitos(requisitos); o.setExperiencia_tiempo(experiencia_tiempo);
-        o.setModalidad_trabajo(modalidad_trabajo); o.setEstado(estado); o.setCluster_id(cluster_id);
+        o.setModalidad_trabajo(modalidad_trabajo); o.setEstado(estado);
+        if (cluster_id != null) {
+            o.setCluster(clusterService.findById(cluster_id).orElse(null));
+        }
         if (sueldo != null) o.setSueldo(BigDecimal.valueOf(sueldo));
         if (categoria_id != null) o.setCategoria(categoriaService.findById(categoria_id).orElse(null));
         if (reclutador_id != null) {
@@ -374,7 +403,7 @@ public class MainGraphQLController {
                                    @Argument String contrato, @Argument String requisitos,
                                    @Argument Integer experiencia_tiempo, @Argument String modalidad_trabajo,
                                    @Argument String estado, @Argument Double sueldo,
-                                   @Argument Integer cluster_id,
+                                   @Argument UUID cluster_id,
                                    @Argument UUID categoria_id, @Argument UUID reclutador_id) {
         Oferta o = ofertaService.findById(id).orElseThrow();
         if (titulo != null) o.setTitulo(titulo);
@@ -384,7 +413,9 @@ public class MainGraphQLController {
         if (experiencia_tiempo != null) o.setExperiencia_tiempo(experiencia_tiempo);
         if (modalidad_trabajo != null) o.setModalidad_trabajo(modalidad_trabajo);
         if (estado != null) o.setEstado(estado);
-        if (cluster_id != null) o.setCluster_id(cluster_id);
+        if (cluster_id != null) {
+            o.setCluster(clusterService.findById(cluster_id).orElse(null));
+        }
         if (sueldo != null) o.setSueldo(BigDecimal.valueOf(sueldo));
         if (categoria_id != null) o.setCategoria(categoriaService.findById(categoria_id).orElse(null));
         if (reclutador_id != null) {
@@ -536,6 +567,16 @@ public class MainGraphQLController {
         String res1 = machineLearningService.entrenarCandidatosManual();
         String res2 = machineLearningService.entrenarOfertasManual();
         return res1 + " | " + res2;
+    }
+
+    @MutationMapping
+    public String entrenarKMeansCandidatos() {
+        return machineLearningService.entrenarCandidatosManual();
+    }
+
+    @MutationMapping
+    public String entrenarKMeansOfertas() {
+        return machineLearningService.entrenarOfertasManual();
     }
 
     @MutationMapping

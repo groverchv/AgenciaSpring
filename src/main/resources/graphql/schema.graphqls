@@ -39,6 +39,14 @@ type Reclutador {
     estado: String
 }
 
+type Cluster {
+    id: UUID!
+    clusterNumero: Int
+    nombre: String
+    tipo: String
+    fechaEntrenamiento: String
+}
+
 type Candidato {
     id: UUID!
     nombre: String
@@ -50,7 +58,7 @@ type Candidato {
     modalidad_preferida: String
     nivel_educativo: String
     nacionalidad: String
-    cluster_id: Int
+    cluster: Cluster
     estado: String
 }
 
@@ -75,7 +83,7 @@ type Oferta {
     modalidad_trabajo: String
     estado: String
     sueldo: Float
-    cluster_id: Int
+    cluster: Cluster
     fecha_publicacion: String
     fecha_vencimiento: String
     categoria: Categoria
@@ -140,6 +148,9 @@ type Query {
     listarCandidatoHabilidades: [CandidatoHabilidad]
     listarOfertaHabilidades: [OfertaHabilidad]
     listarOfertaTrabajos: [OfertaTrabajo]
+    listarClusters: [Cluster]
+    obtenerCluster(id: UUID!): Cluster
+    listarClustersPorTipo(tipo: String!): [Cluster]
 }
 
 type Mutation {
@@ -174,14 +185,18 @@ type Mutation {
     eliminarReclutador(id: UUID!): Boolean
 
     # Candidato
-    crearCandidato(nombre: String, apellido: String, email: String, password: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: Int, estado: String): Candidato
-    actualizarCandidato(id: UUID!, nombre: String, apellido: String, email: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: Int, estado: String): Candidato
+    crearCandidato(nombre: String, apellido: String, email: String, password: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: UUID, estado: String): Candidato
+    actualizarCandidato(id: UUID!, nombre: String, apellido: String, email: String, registro: Int, sueldo_esperado: Float, modalidad_preferida: String, nivel_educativo: String, nacionalidad: String, cluster_id: UUID, estado: String): Candidato
     eliminarCandidato(id: UUID!): Boolean
 
     # Oferta
-    crearOferta(titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: Int, categoria_id: UUID, reclutador_id: UUID): Oferta
-    actualizarOferta(id: UUID!, titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: Int, categoria_id: UUID, reclutador_id: UUID): Oferta
+    crearOferta(titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: UUID, categoria_id: UUID, reclutador_id: UUID): Oferta
+    actualizarOferta(id: UUID!, titulo: String, descripcion: String, contrato: String, requisitos: String, experiencia_tiempo: Int, modalidad_trabajo: String, estado: String, sueldo: Float, cluster_id: UUID, categoria_id: UUID, reclutador_id: UUID): Oferta
     eliminarOferta(id: UUID!): Boolean
+
+    # Cluster
+    crearCluster(clusterNumero: Int, nombre: String, tipo: String): Cluster
+    eliminarCluster(id: UUID!): Boolean
 
     # Postulacion
     crearPostulacion(fase_alcanzada: String, id_cv: String, candidato_id: UUID, oferta_id: UUID): Postulacion
@@ -208,6 +223,8 @@ type Mutation {
 
     # Machine Learning Integrations
     dispararEntrenamientoKMeansManual: String
+    entrenarKMeansCandidatos: String
+    entrenarKMeansOfertas: String
     clasificarCandidato(id: UUID!): Int
     clasificarOferta(id: UUID!): Int
     

@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 public class KmeansCandidateDto {
     private String id;
     private BigDecimal sueldo_esperado;
-    private Integer nivel_educativo;
-    private Integer modalidad_preferida; // 1 Remoto, 0 Presencial, etc.
+    private Integer nivel_educativo_num;        // Python espera "nivel_educativo_num"
+    private String modalidad_preferida;          // Python espera el String crudo ("Remoto", "Presencial", etc.)
     private Long total_postulaciones;
-    private List<String> habilidades;
+    private List<String> habilidades_ids;        // Python espera "habilidades_ids"
 }

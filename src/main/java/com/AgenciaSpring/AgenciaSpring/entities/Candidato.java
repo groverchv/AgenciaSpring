@@ -1,8 +1,6 @@
 package com.AgenciaSpring.AgenciaSpring.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import java.math.BigDecimal;
@@ -19,5 +17,8 @@ public class Candidato extends Usuario {
     private String nivel_educativo;
     private String nacionalidad;
     private Integer meses_experiencia_total;
-    private Integer cluster_id;
+
+    @ManyToOne
+    @JoinColumn(name = "cluster_id")
+    private Cluster cluster;
 }

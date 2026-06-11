@@ -3,6 +3,7 @@ package com.AgenciaSpring.AgenciaSpring.services;
 import com.AgenciaSpring.AgenciaSpring.dto.KmeansCandidateDto;
 import com.AgenciaSpring.AgenciaSpring.dto.KmeansOfferDto;
 import com.AgenciaSpring.AgenciaSpring.entities.Candidato;
+import com.AgenciaSpring.AgenciaSpring.entities.Cluster;
 import com.AgenciaSpring.AgenciaSpring.entities.Oferta;
 import com.AgenciaSpring.AgenciaSpring.entities.Postulacion;
 import com.AgenciaSpring.AgenciaSpring.repositories.*;
@@ -11,9 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +39,9 @@ public class MachineLearningIntegrationService {
     @Autowired
     private OfertaHabilidadRepository ofertaHabilidadRepository;
 
+    @Autowired
+    private ClusterService clusterService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Se ejecutará automáticamente todos los domingos a las 2:00 AM
@@ -47,6 +52,7 @@ public class MachineLearningIntegrationService {
         entrenarOfertasManual();
     }
 
+    @Transactional
     public String entrenarCandidatosManual() {
         try {
             List<Candidato> candidatos = candidatoRepository.findAll();
@@ -62,6 +68,7 @@ public class MachineLearningIntegrationService {
                     asignaciones {
                       id
                       clusterId
+                      clusterName
                     }
                     error
                   }
@@ -70,16 +77,34 @@ public class MachineLearningIntegrationService {
 
             Map<?, ?> response = graphQlClient.document(document)
                     .variable("candidatesJson", jsonPayload)
-                    .variable("nClusters", 5) // O el número que decidas
+                    .variable("nClusters", 5)
                     .retrieve("trainKmeansCandidates")
                     .toEntity(Map.class)
                     .block();
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
-                // Extraer asignaciones y actualizar la base de datos de manera eficiente
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
                 if (asignaciones != null) {
+                    // 1. Borrar clusters anteriores de tipo CANDIDATO
+                    clusterService.deleteByTipo("CANDIDATO");
+
+                    // 2. Crear los nuevos clusters
+                    Map<Integer, Cluster> clusterMap = new HashMap<>();
+                    for (Map<String, Object> asig : asignaciones) {
+                        Integer clusterId = (Integer) asig.get("clusterId");
+                        if (!clusterMap.containsKey(clusterId)) {
+                            Cluster cluster = new Cluster();
+                            cluster.setId(UUID.randomUUID());
+                            cluster.setClusterNumero(clusterId);
+                            cluster.setNombre((String) asig.get("clusterName"));
+                            cluster.setTipo("CANDIDATO");
+                            cluster.setFechaEntrenamiento(Instant.now());
+                            clusterMap.put(clusterId, clusterService.save(cluster));
+                        }
+                    }
+
+                    // 3. Asignar clusters a candidatos
                     Map<String, Candidato> candidatosMap = candidatos.stream()
                             .collect(Collectors.toMap(c -> c.getId().toString(), c -> c));
 
@@ -88,10 +113,9 @@ public class MachineLearningIntegrationService {
                         Integer clusterId = (Integer) asig.get("clusterId");
                         Candidato c = candidatosMap.get(idStr);
                         if (c != null) {
-                            c.setCluster_id(clusterId);
+                            c.setCluster(clusterMap.get(clusterId));
                         }
                     }
-                    // Guardar todos los candidatos actualizados
                     candidatoRepository.saveAll(candidatos);
                 }
             }
@@ -104,6 +128,7 @@ public class MachineLearningIntegrationService {
         }
     }
 
+    @Transactional
     public String entrenarOfertasManual() {
         try {
             List<Oferta> ofertas = ofertaRepository.findAll();
@@ -119,6 +144,7 @@ public class MachineLearningIntegrationService {
                     asignaciones {
                       id
                       clusterId
+                      clusterName
                     }
                     error
                   }
@@ -127,16 +153,34 @@ public class MachineLearningIntegrationService {
 
             Map<?, ?> response = graphQlClient.document(document)
                     .variable("offersJson", jsonPayload)
-                    .variable("nClusters", 5) // O el número que decidas
+                    .variable("nClusters", 5)
                     .retrieve("trainKmeansOffers")
                     .toEntity(Map.class)
                     .block();
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
-                // Extraer asignaciones y actualizar la base de datos de manera eficiente
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> asignaciones = (List<Map<String, Object>>) response.get("asignaciones");
                 if (asignaciones != null) {
+                    // 1. Borrar clusters anteriores de tipo OFERTA
+                    clusterService.deleteByTipo("OFERTA");
+
+                    // 2. Crear los nuevos clusters
+                    Map<Integer, Cluster> clusterMap = new HashMap<>();
+                    for (Map<String, Object> asig : asignaciones) {
+                        Integer clusterId = (Integer) asig.get("clusterId");
+                        if (!clusterMap.containsKey(clusterId)) {
+                            Cluster cluster = new Cluster();
+                            cluster.setId(UUID.randomUUID());
+                            cluster.setClusterNumero(clusterId);
+                            cluster.setNombre((String) asig.get("clusterName"));
+                            cluster.setTipo("OFERTA");
+                            cluster.setFechaEntrenamiento(Instant.now());
+                            clusterMap.put(clusterId, clusterService.save(cluster));
+                        }
+                    }
+
+                    // 3. Asignar clusters a ofertas
                     Map<String, Oferta> ofertasMap = ofertas.stream()
                             .collect(Collectors.toMap(o -> o.getId().toString(), o -> o));
 
@@ -145,10 +189,9 @@ public class MachineLearningIntegrationService {
                         Integer clusterId = (Integer) asig.get("clusterId");
                         Oferta o = ofertasMap.get(idStr);
                         if (o != null) {
-                            o.setCluster_id(clusterId);
+                            o.setCluster(clusterMap.get(clusterId));
                         }
                     }
-                    // Guardar todas las ofertas actualizadas
                     ofertaRepository.saveAll(ofertas);
                 }
             }
@@ -172,6 +215,7 @@ public class MachineLearningIntegrationService {
                   classifyCandidate(candidateJson: $candidateJson) {
                     success
                     clusterId
+                    clusterName
                     message
                   }
                 }
@@ -184,10 +228,24 @@ public class MachineLearningIntegrationService {
                     .block();
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
-                Integer clusterId = (Integer) response.get("clusterId");
-                c.setCluster_id(clusterId);
+                Integer clusterNumero = (Integer) response.get("clusterId");
+                String clusterName = (String) response.get("clusterName");
+
+                // Buscar o crear el cluster
+                Cluster cluster = clusterService.findByTipoAndClusterNumero("CANDIDATO", clusterNumero)
+                        .orElseGet(() -> {
+                            Cluster newCluster = new Cluster();
+                            newCluster.setId(UUID.randomUUID());
+                            newCluster.setClusterNumero(clusterNumero);
+                            newCluster.setNombre(clusterName);
+                            newCluster.setTipo("CANDIDATO");
+                            newCluster.setFechaEntrenamiento(Instant.now());
+                            return clusterService.save(newCluster);
+                        });
+
+                c.setCluster(cluster);
                 candidatoRepository.save(c);
-                return clusterId;
+                return clusterNumero;
             }
             return null;
         } catch (Exception e) {
@@ -207,6 +265,7 @@ public class MachineLearningIntegrationService {
                   classifyOffer(offerJson: $offerJson) {
                     success
                     clusterId
+                    clusterName
                     message
                   }
                 }
@@ -219,10 +278,24 @@ public class MachineLearningIntegrationService {
                     .block();
 
             if (response != null && Boolean.TRUE.equals(response.get("success"))) {
-                Integer clusterId = (Integer) response.get("clusterId");
-                o.setCluster_id(clusterId);
+                Integer clusterNumero = (Integer) response.get("clusterId");
+                String clusterName = (String) response.get("clusterName");
+
+                // Buscar o crear el cluster
+                Cluster cluster = clusterService.findByTipoAndClusterNumero("OFERTA", clusterNumero)
+                        .orElseGet(() -> {
+                            Cluster newCluster = new Cluster();
+                            newCluster.setId(UUID.randomUUID());
+                            newCluster.setClusterNumero(clusterNumero);
+                            newCluster.setNombre(clusterName);
+                            newCluster.setTipo("OFERTA");
+                            newCluster.setFechaEntrenamiento(Instant.now());
+                            return clusterService.save(newCluster);
+                        });
+
+                o.setCluster(cluster);
                 ofertaRepository.save(o);
-                return clusterId;
+                return clusterNumero;
             }
             return null;
         } catch (Exception e) {
@@ -235,14 +308,15 @@ public class MachineLearningIntegrationService {
         KmeansCandidateDto dto = new KmeansCandidateDto();
         dto.setId(c.getId().toString());
         dto.setSueldo_esperado(c.getSueldo_esperado());
-        dto.setNivel_educativo(mapearNivelEducativo(c.getNivel_educativo()));
-        dto.setModalidad_preferida("Remoto".equalsIgnoreCase(c.getModalidad_preferida()) ? 1 : 0);
+        dto.setNivel_educativo_num(mapearNivelEducativo(c.getNivel_educativo()));
+        // Enviar el String crudo: Python hace One-Hot Encoding internamente
+        dto.setModalidad_preferida(c.getModalidad_preferida() != null ? c.getModalidad_preferida() : "Desconocido");
         dto.setTotal_postulaciones(postulacionRepository.countByCandidatoId(c.getId()));
         List<String> habilidades = candidatoHabilidadRepository.findByCandidatoId(c.getId())
                 .stream()
                 .map(ch -> ch.getHabilidad().getId().toString())
                 .collect(Collectors.toList());
-        dto.setHabilidades(habilidades);
+        dto.setHabilidades_ids(habilidades);
         return dto;
     }
 
@@ -255,12 +329,28 @@ public class MachineLearningIntegrationService {
         if (o.getCategoria() != null) {
             dto.setCategoria_id(o.getCategoria().getId().toString());
         }
-        List<String> habilidades = ofertaHabilidadRepository.findByOfertaId(o.getId())
+        // Enviar habilidades como objetos con id y peso (mapeando nivel_importancia)
+        List<Map<String, Object>> habilidadesRequeridas = ofertaHabilidadRepository.findByOfertaId(o.getId())
                 .stream()
-                .map(oh -> oh.getHabilidad().getId().toString())
+                .map(oh -> {
+                    Map<String, Object> habMap = new HashMap<>();
+                    habMap.put("id", oh.getHabilidad().getId().toString());
+                    habMap.put("peso", mapearNivelImportanciaAPeso(oh.getNivel_importancia()));
+                    return habMap;
+                })
                 .collect(Collectors.toList());
-        dto.setHabilidades(habilidades);
+        dto.setHabilidades_requeridas(habilidadesRequeridas);
         return dto;
+    }
+
+    private double mapearNivelImportanciaAPeso(String nivelImportancia) {
+        if (nivelImportancia == null) return 1.0;
+        return switch (nivelImportancia.toLowerCase()) {
+            case "alta" -> 2.0;
+            case "media" -> 1.5;
+            case "baja" -> 1.0;
+            default -> 1.0;
+        };
     }
 
     private Integer mapearNivelEducativo(String nivel) {
@@ -314,9 +404,6 @@ public class MachineLearningIntegrationService {
             Postulacion p = postulacionRepository.findById(postulacionId)
                     .orElseThrow(() -> new RuntimeException("Postulación no encontrada"));
             com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto dto = mapearPostulacionADto(p);
-            // El backend espera la forma en que FastAPI define su mutación.
-            // Según tu esquema, puede ser un JSON simple, lo enviaremos como Array para mantener compatibilidad si es un array 
-            // o como objecto directo. Lo enviaremos como Array de 1.
             String jsonPayload = objectMapper.writeValueAsString(List.of(dto));
 
             String document = """

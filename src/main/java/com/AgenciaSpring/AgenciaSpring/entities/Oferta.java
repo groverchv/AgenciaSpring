@@ -28,7 +28,11 @@ public class Oferta {
     private String nivel_educativo;
     private String estado;
     private BigDecimal sueldo;
-    private Integer cluster_id;
+
+    @ManyToOne
+    @JoinColumn(name = "cluster_id")
+    private Cluster cluster;
+
     private Instant fecha_publicacion;
     private Instant fecha_vencimiento;
 
