@@ -17,4 +17,6 @@ public class Empresa {
     private Integer nit;
     private String direccion;
     private Integer celular;
+    private Double latitud;
+    private Double longitud;
 }

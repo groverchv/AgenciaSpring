@@ -44,7 +44,7 @@ public class BlockchainService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 logger.info("Transacción registrada con éxito en el blockchain para destinatario: " + recipient);
-                
+
                 // Intentar minar el bloque automáticamente para procesar la transacción
                 minarBloque();
                 return true;

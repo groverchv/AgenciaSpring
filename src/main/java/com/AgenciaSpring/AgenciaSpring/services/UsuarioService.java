@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
+import com.AgenciaSpring.AgenciaSpring.entities.Rol;
+
 @Service
 public class UsuarioService {
     @Autowired
@@ -20,6 +22,9 @@ public class UsuarioService {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CandidatoService candidatoService;
 
     public List<Usuario> findAll() { return repository.findAll(); }
     public Optional<Usuario> findById(UUID id) { return repository.findById(id); }
@@ -42,17 +47,23 @@ public class UsuarioService {
                 input.getVideo_id(), 
                 "Activo"
         );
+
+        // Asignar rol de Candidato
+        Rol rol = rolRepository.findAll().stream()
+                .filter(x -> "Candidato".equalsIgnoreCase(x.getNombre()))
+                .findFirst()
+                .orElse(null);
+        if (rol != null) {
+            Usuario u = repository.findById(finalId).orElseThrow();
+            u.setRolObj(rol);
+            u.setRol(rol.getNombre());
+            repository.save(u);
+        }
+
+        // Insertar en la tabla candidatos
+        candidatoService.insertCandidatoId(finalId);
         
-        // Ahora sí lo recuperamos por si se necesita
-        Usuario u = new Usuario();
-        u.setId(finalId);
-        u.setNombre(input.getNombre());
-        u.setApellido(input.getApellido());
-        u.setEmail(input.getEmail());
-        u.setTelefono(input.getTelefono());
-        u.setVideo_id(input.getVideo_id());
-        u.setEstado("Activo");
-        return u;
+        return repository.findById(finalId).orElseThrow();
     }
     
     public void deleteById(UUID id) { repository.deleteById(id); }
