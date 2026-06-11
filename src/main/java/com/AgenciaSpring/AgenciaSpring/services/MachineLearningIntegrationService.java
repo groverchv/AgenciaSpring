@@ -364,13 +364,25 @@ public class MachineLearningIntegrationService {
             default -> 0;
         };
     }
-    // ══════════════════════ RANDOM FOREST ════════════════════════════════════
-
+    // ══════════════════════ RANDOM FOREST ══════════════════════
     public String entrenarRandomForestManual() {
         try {
             List<Postulacion> postulaciones = postulacionRepository.findAll();
+            
+            // Prefetch skills to avoid N+1 queries
+            List<com.AgenciaSpring.AgenciaSpring.entities.CandidatoHabilidad> allCandHabs = candidatoHabilidadRepository.findAll();
+            List<com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad> allOffHabs = ofertaHabilidadRepository.findAll();
+            
+            Map<UUID, List<com.AgenciaSpring.AgenciaSpring.entities.CandidatoHabilidad>> candHabsMap = allCandHabs.stream()
+                    .filter(ch -> ch.getCandidato() != null)
+                    .collect(Collectors.groupingBy(ch -> ch.getCandidato().getId()));
+            
+            Map<UUID, List<com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad>> offHabsMap = allOffHabs.stream()
+                    .filter(oh -> oh.getOferta() != null)
+                    .collect(Collectors.groupingBy(oh -> oh.getOferta().getId()));
+
             List<com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto> dtoList = postulaciones.stream()
-                    .map(this::mapearPostulacionADto)
+                    .map(p -> this.mapearPostulacionADto(p, candHabsMap, offHabsMap))
                     .collect(Collectors.toList());
             String jsonPayload = objectMapper.writeValueAsString(dtoList);
 
@@ -470,7 +482,65 @@ public class MachineLearningIntegrationService {
 
         // 5. Modalidad
         boolean matchModalidad = c.getModalidad_preferida() != null && 
-                                 c.getModalidad_preferida().equalsIgnoreCase(o.getModalidad_trabajo());
+                                  c.getModalidad_preferida().equalsIgnoreCase(o.getModalidad_trabajo());
+        dto.setMatch_modalidad(matchModalidad ? 1 : 0);
+
+        // 6. Es Exitosa
+        String fase = p.getFase_alcanzada();
+        int esExitosa = 0;
+        if (fase != null && (fase.equalsIgnoreCase("Contratado") || 
+                             fase.equalsIgnoreCase("Oferta Realizada") || 
+                             fase.equalsIgnoreCase("Aprobó Entrevista Técnica"))) {
+            esExitosa = 1;
+        }
+        dto.setEs_exitosa(esExitosa);
+
+        return dto;
+    }
+
+    private com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto mapearPostulacionADto(
+            Postulacion p, 
+            Map<UUID, List<com.AgenciaSpring.AgenciaSpring.entities.CandidatoHabilidad>> candHabsMap,
+            Map<UUID, List<com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad>> offHabsMap) {
+        com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto dto = new com.AgenciaSpring.AgenciaSpring.dto.RandomForestPostulacionDto();
+        Candidato c = p.getCandidato();
+        Oferta o = p.getOferta();
+
+        // 1. Delta Sueldo (Oferta - Candidato)
+        java.math.BigDecimal sueldoOferta = o.getSueldo() != null ? o.getSueldo() : java.math.BigDecimal.ZERO;
+        java.math.BigDecimal sueldoCandidato = c.getSueldo_esperado() != null ? c.getSueldo_esperado() : java.math.BigDecimal.ZERO;
+        dto.setDelta_sueldo(sueldoOferta.subtract(sueldoCandidato));
+
+        // 2. Habilidades
+        List<com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad> ofertaHabilidades = offHabsMap.getOrDefault(o.getId(), Collections.emptyList());
+        List<com.AgenciaSpring.AgenciaSpring.entities.CandidatoHabilidad> candidatoHabilidades = candHabsMap.getOrDefault(c.getId(), Collections.emptyList());
+        
+        long coincidencias = 0;
+        for (com.AgenciaSpring.AgenciaSpring.entities.OfertaHabilidad oh : ofertaHabilidades) {
+            boolean candidatoLaTiene = candidatoHabilidades.stream()
+                    .anyMatch(ch -> ch.getHabilidad().getId().equals(oh.getHabilidad().getId()));
+            if (candidatoLaTiene) coincidencias++;
+        }
+        
+        double porcentajeMatch = ofertaHabilidades.isEmpty() ? 1.0 : ((double) coincidencias / ofertaHabilidades.size());
+        dto.setPorcentaje_match_habilidades(porcentajeMatch);
+
+        int habilidadesExtra = (int) (candidatoHabilidades.size() - coincidencias);
+        dto.setHabilidades_extra(habilidadesExtra > 0 ? habilidadesExtra : 0);
+
+        // 3. Experiencia (Diferencia en meses de experiencia: candidato_meses - oferta_meses)
+        double expCandidatoMeses = c.getMeses_experiencia_total() != null ? c.getMeses_experiencia_total() : 0.0;
+        double expOfertaMeses = o.getExperiencia_tiempo() != null ? o.getExperiencia_tiempo() : 0.0;
+        dto.setDelta_experiencia(expCandidatoMeses - expOfertaMeses);
+
+        // 4. Nivel Educativo
+        int nivelCandidato = mapearNivelEducativo(c.getNivel_educativo());
+        int nivelOferta = mapearNivelEducativo(o.getNivel_educativo());
+        dto.setCumple_nivel_educativo(nivelCandidato >= nivelOferta ? 1 : 0);
+
+        // 5. Modalidad
+        boolean matchModalidad = c.getModalidad_preferida() != null && 
+                                  c.getModalidad_preferida().equalsIgnoreCase(o.getModalidad_trabajo());
         dto.setMatch_modalidad(matchModalidad ? 1 : 0);
 
         // 6. Es Exitosa
