@@ -14,6 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface CandidatoRepository extends JpaRepository<Candidato, UUID> {
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO candidatos (id, cluster_id, meses_experiencia_total, registro) VALUES (:id, 0, 0, 0)", nativeQuery = true)
+    @Query(value = "INSERT INTO candidatos (id, cluster_id, meses_experiencia_total, registro) VALUES (:id, NULL, 0, 0)", nativeQuery = true)
     void insertCandidatoId(@Param("id") UUID id);
 }
