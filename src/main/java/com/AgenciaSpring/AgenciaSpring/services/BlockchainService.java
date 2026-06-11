@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 @Service
 public class BlockchainService {
-    private static final Logger logger = Logger.getLogger(BlockchainService.name);
+    private static final Logger logger = Logger.getLogger(BlockchainService.class.getName());
     private final RestTemplate restTemplate;
 
     @Value("${blockchain.node.url}")
