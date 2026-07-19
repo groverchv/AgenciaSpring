@@ -55,12 +55,14 @@ type Candidato {
     apellido: String
     email: String
     password: String
+    telefono: String
     registro: Int
     sueldo_esperado: Float
     modalidad_preferida: String
     nivel_educativo: String
     nacionalidad: String
     cluster: Cluster
+    cluster_id: UUID
     estado: String
 }
 
@@ -86,6 +88,7 @@ type Oferta {
     estado: String
     sueldo: Float
     cluster: Cluster
+    cluster_id: UUID
     fecha_publicacion: String
     fecha_vencimiento: String
     categoria: Categoria

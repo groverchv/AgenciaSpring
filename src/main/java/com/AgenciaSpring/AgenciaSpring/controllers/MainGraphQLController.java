@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import java.time.Instant;
@@ -668,5 +669,15 @@ public class MainGraphQLController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @SchemaMapping(typeName = "Oferta", field = "cluster_id")
+    public UUID getClusterId(Oferta o) {
+        return o.getCluster() != null ? o.getCluster().getId() : null;
+    }
+
+    @SchemaMapping(typeName = "Candidato", field = "cluster_id")
+    public UUID getClusterId(Candidato c) {
+        return c.getCluster() != null ? c.getCluster().getId() : null;
     }
 }
