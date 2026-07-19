@@ -293,7 +293,8 @@ DECLARE
   cat_ids UUID[];
   rec_ids UUID[];
   oferta_id UUID;
-  i INT;
+  r_idx INT;
+  o_idx INT;
   sueldo_base NUMERIC;
   exp_req INT;
 BEGIN
@@ -302,35 +303,37 @@ BEGIN
   -- Recoger IDs de reclutadores
   rec_ids := ARRAY(SELECT id FROM reclutadores ORDER BY id);
 
-  FOR i IN 1..80 LOOP
-    oferta_id := ('10000000-0000-0000-0000-0000000000' || LPAD(i::TEXT, 2, '0'))::UUID;
-    
-    -- Sueldo base variable según posición (entre 2500 y 25000 BOB)
-    sueldo_base := 2500 + (random() * 22500)::INT;
-    -- Redondear a centenas
-    sueldo_base := ROUND(sueldo_base / 100) * 100;
-    
-    -- Experiencia requerida (0 a 10 años en meses)
-    exp_req := (random() * 120)::INT;
+  FOR r_idx IN 1..30 LOOP
+    FOR o_idx IN 1..100 LOOP
+      oferta_id := gen_random_uuid();
+      
+      -- Sueldo base variable según posición (entre 2500 y 25000 BOB)
+      sueldo_base := 2500 + (random() * 22500)::INT;
+      -- Redondear a centenas
+      sueldo_base := ROUND(sueldo_base / 100) * 100;
+      
+      -- Experiencia requerida (0 a 10 años en meses)
+      exp_req := (random() * 120)::INT;
 
-    INSERT INTO ofertas (id, titulo, descripcion, contrato, requisitos, experiencia_tiempo, modalidad_trabajo, nivel_educativo, estado, sueldo, cluster_id, fecha_publicacion, fecha_vencimiento, categoria_id, reclutador_id)
-    VALUES (
-      oferta_id,
-      titulos[i],
-      descripciones[1 + (i % 5)],
-      contratos[1 + (i % 4)],
-      'Requisitos específicos para la posición de ' || titulos[i],
-      exp_req,
-      modalidades[1 + (i % 3)],
-      niveles_edu[1 + (i % 5)],
-      estados_of[1 + (i % 4)],
-      sueldo_base,
-      NULL,
-      NOW() - INTERVAL '1 day' * (random() * 365)::INT,
-      NOW() + INTERVAL '1 day' * (random() * 90)::INT,
-      cat_ids[1 + (i % 15)],
-      rec_ids[1 + (i % 30)]
-    );
+      INSERT INTO ofertas (id, titulo, descripcion, contrato, requisitos, experiencia_tiempo, modalidad_trabajo, nivel_educativo, estado, sueldo, cluster_id, fecha_publicacion, fecha_vencimiento, categoria_id, reclutador_id)
+      VALUES (
+        oferta_id,
+        titulos[1 + ((r_idx * 100 + o_idx) % 80)],
+        descripciones[1 + ((r_idx * 100 + o_idx) % 5)],
+        contratos[1 + ((r_idx * 100 + o_idx) % 4)],
+        'Requisitos específicos para la posición de ' || titulos[1 + ((r_idx * 100 + o_idx) % 80)],
+        exp_req,
+        modalidades[1 + ((r_idx * 100 + o_idx) % 3)],
+        niveles_edu[1 + ((r_idx * 100 + o_idx) % 5)],
+        estados_of[1 + ((r_idx * 100 + o_idx) % 4)],
+        sueldo_base,
+        NULL,
+        NOW() - INTERVAL '1 day' * (random() * 365)::INT,
+        NOW() + INTERVAL '1 day' * (random() * 90)::INT,
+        cat_ids[1 + ((r_idx * 100 + o_idx) % 15)],
+        rec_ids[r_idx]
+      );
+    END LOOP;
   END LOOP;
 END $$;
 
