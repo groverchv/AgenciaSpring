@@ -141,8 +141,10 @@ type Query {
     listarCategorias: [Categoria]
     obtenerCategoria(id: UUID!): Categoria
     listarOfertas: [Oferta]
+    listarOfertasPorReclutador(reclutadorId: UUID!): [Oferta]
     obtenerOferta(id: UUID!): Oferta
     listarPostulaciones: [Postulacion]
+    listarPostulacionesPorReclutador(reclutadorId: UUID!): [Postulacion]
     obtenerPostulacion(id: UUID!): Postulacion
     listarReclutadores: [Reclutador]
     obtenerReclutador(id: UUID!): Reclutador

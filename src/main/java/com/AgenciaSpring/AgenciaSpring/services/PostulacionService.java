@@ -19,6 +19,7 @@ public class PostulacionService {
     private BlockchainService blockchainService;
 
     public List<Postulacion> findAll() { return repository.findAll(); }
+    public List<Postulacion> findByReclutadorId(UUID reclutadorId) { return repository.findByOfertaReclutadorId(reclutadorId); }
     public Optional<Postulacion> findById(UUID id) { return repository.findById(id); }
 
     public Postulacion save(Postulacion entity) {

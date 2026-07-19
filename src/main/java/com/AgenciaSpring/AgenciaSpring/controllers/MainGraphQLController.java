@@ -51,9 +51,11 @@ public class MainGraphQLController {
     @QueryMapping public Candidato               obtenerCandidato(@Argument UUID id) { return candidatoService.findById(id).orElse(null); }
 
     @QueryMapping public List<Oferta>            listarOfertas()              { return ofertaService.findAll(); }
+    @QueryMapping public List<Oferta>            listarOfertasPorReclutador(@Argument UUID reclutadorId) { return ofertaService.findByReclutadorId(reclutadorId); }
     @QueryMapping public Oferta                  obtenerOferta(@Argument UUID id) { return ofertaService.findById(id).orElse(null); }
 
     @QueryMapping public List<Postulacion>       listarPostulaciones()        { return postulacionService.findAll(); }
+    @QueryMapping public List<Postulacion>       listarPostulacionesPorReclutador(@Argument UUID reclutadorId) { return postulacionService.findByReclutadorId(reclutadorId); }
     @QueryMapping public Postulacion             obtenerPostulacion(@Argument UUID id) { return postulacionService.findById(id).orElse(null); }
 
     @QueryMapping public List<Categoria>         listarCategorias()           { return categoriaService.findAll(); }

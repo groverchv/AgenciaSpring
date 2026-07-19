@@ -20,6 +20,7 @@ public class OfertaService {
     private FcmService fcmService;
 
     public List<Oferta> findAll() { return repository.findAll(); }
+    public List<Oferta> findByReclutadorId(UUID reclutadorId) { return repository.findByReclutadorId(reclutadorId); }
     public Optional<Oferta> findById(UUID id) { return repository.findById(id); }
     
     public Oferta save(Oferta entity) {
