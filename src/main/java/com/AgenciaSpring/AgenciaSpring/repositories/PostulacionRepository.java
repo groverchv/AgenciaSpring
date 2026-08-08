@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface PostulacionRepository extends JpaRepository<Postulacion, UUID> {
     long countByCandidatoId(UUID candidatoId);
     List<Postulacion> findByOfertaReclutadorId(UUID reclutadorId);
+    List<Postulacion> findByCandidatoId(UUID candidatoId);
 }
